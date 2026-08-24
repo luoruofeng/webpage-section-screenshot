@@ -1,0 +1,250 @@
+/* ============================================================
+   content script 样式
+   使用 Shadow DOM 隔离，前缀 sss- 避免与页面样式冲突
+   ============================================================ */
+
+:host {
+  all: initial;
+  --sss-accent: #2563eb;
+  --sss-accent-hover: #1d4ed8;
+  --sss-danger: #ef4444;
+  --sss-bg: rgba(255, 255, 255, 0.95);
+  --sss-border: #e5e7eb;
+  --sss-text: #1f2937;
+  --sss-text-sub: #6b7280;
+  --sss-ruler-size: 24px;
+  --sss-z-ruler: 2147483000;
+  --sss-z-toolbar: 2147484000;
+  --sss-z-modal: 2147484500;
+  --sss-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: var(--sss-font);
+  color: var(--sss-text);
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ---------- 标尺栏 ---------- */
+.sss-ruler-horizontal {
+  position: fixed;
+  top: 0;
+  left: var(--sss-ruler-size);
+  right: 0;
+  height: var(--sss-ruler-size);
+  background: var(--sss-bg);
+  border-bottom: 1px solid var(--sss-border);
+  z-index: var(--sss-z-ruler);
+  cursor: crosshair;
+  overflow: hidden;
+  user-select: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.sss-ruler-vertical {
+  position: fixed;
+  top: var(--sss-ruler-size);
+  left: 0;
+  bottom: 0;
+  width: var(--sss-ruler-size);
+  background: var(--sss-bg);
+  border-right: 1px solid var(--sss-border);
+  z-index: var(--sss-z-ruler);
+  cursor: crosshair;
+  overflow: hidden;
+  user-select: none;
+  box-shadow: 1px 0 3px rgba(0, 0, 0, 0.08);
+}
+
+.sss-ruler-corner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sss-ruler-size);
+  height: var(--sss-ruler-size);
+  background: var(--sss-bg);
+  border-right: 1px solid var(--sss-border);
+  border-bottom: 1px solid var(--sss-border);
+  z-index: var(--sss-z-ruler);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sss-ruler-corner svg {
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
+}
+
+.sss-ruler-tick-label {
+  position: absolute;
+  font-size: 9px;
+  color: var(--sss-text-sub);
+  font-family: var(--sss-font);
+  pointer-events: none;
+}
+
+/* ---------- 浮动工具条 ---------- */
+.sss-toolbar {
+  position: fixed;
+  top: 40px;
+  right: 16px;
+  z-index: var(--sss-z-toolbar);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: var(--sss-bg);
+  border: 1px solid var(--sss-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  user-select: none;
+}
+
+.sss-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: var(--sss-font);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.sss-btn:hover {
+  transform: translateY(-1px);
+}
+
+.sss-btn:active {
+  transform: translateY(0);
+}
+
+.sss-btn-primary {
+  background: var(--sss-accent);
+  color: #fff;
+}
+
+.sss-btn-primary:hover {
+  background: var(--sss-accent-hover);
+}
+
+.sss-btn-secondary {
+  background: #f3f4f6;
+  color: var(--sss-text);
+  border: 1px solid var(--sss-border);
+}
+
+.sss-btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.sss-btn-danger {
+  background: var(--sss-danger);
+  color: #fff;
+}
+
+.sss-btn-danger:hover {
+  background: #dc2626;
+}
+
+.sss-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.sss-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* ---------- 进度模态框 ---------- */
+.sss-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sss-z-modal);
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+  font-family: var(--sss-font);
+}
+
+.sss-modal {
+  width: 420px;
+  max-width: 90vw;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.sss-modal-title {
+  margin: 0 0 16px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--sss-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sss-modal-progress-track {
+  width: 100%;
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 12px 0 8px;
+}
+
+.sss-modal-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--sss-accent), #60a5fa);
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+
+.sss-modal-progress-text {
+  font-size: 12px;
+  color: var(--sss-text-sub);
+  text-align: center;
+}
+
+.sss-modal-status {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--sss-text-sub);
+  text-align: center;
+  min-height: 18px;
+}
+
+.sss-modal-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.sss-modal-footer {
+  margin-top: 12px;
+  font-size: 11px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.sss-modal-done .sss-modal-progress-fill {
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+}
