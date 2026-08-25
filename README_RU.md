@@ -105,10 +105,6 @@ webpage-section-screenshot/
 │       ├── CoffeeModal.js       # Модальное окно «Угостить кофе» (пожертвование)
 │       ├── ClassSelectionModal.js # Модальное окно ввода для автовыделения по классу
 │       └── Toolbar.js           # Плавающая панель инструментов на странице
-├── popup/
-│   ├── popup.html               # Popup расширения
-│   ├── popup.css
-│   └── popup.js
 ├── lib/
 │   └── html-to-image.js         # Дополнительное решение для снимка всей страницы (SVG foreignObject)
 ├── assets/

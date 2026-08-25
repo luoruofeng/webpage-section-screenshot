@@ -15,6 +15,7 @@
       this._el = null;
       this.onShortcutChange = null;
       this.onLanguageChange = null;
+      this.onOpenHowTo = null; // 打开“如何使用”讲解模态框
 
       this._settings = {
         selectionShortcut: 'p',
@@ -96,7 +97,11 @@
               </div>
             </div>
           </div>
-          <div class="sss-modal-actions">
+          <div class="sss-modal-actions sss-settings-actions">
+            <button class="sss-btn sss-btn-secondary sss-howto-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              ${i18n.t('settingsHowTo')}
+            </button>
             <button class="sss-btn sss-btn-primary sss-save-btn">${i18n.t('settingsSave')}</button>
             <button class="sss-btn sss-btn-secondary sss-close-btn">${i18n.t('settingsClose')}</button>
           </div>
@@ -135,6 +140,11 @@
 
       overlay.querySelector('.sss-close-btn').addEventListener('click', () => {
         this.hide();
+      });
+
+      // 点击“如何使用”时，打开讲解模态框
+      overlay.querySelector('.sss-howto-btn').addEventListener('click', () => {
+        this.onOpenHowTo?.();
       });
 
       overlay.addEventListener('pointerdown', (e) => e.stopPropagation());

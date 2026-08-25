@@ -105,10 +105,6 @@ webpage-section-screenshot/
 │       ├── CoffeeModal.js       # Modal Invitar a un café (donación)
 │       ├── ClassSelectionModal.js # Modal de entrada para selección automática por clase
 │       └── Toolbar.js           # Barra de herramientas flotante en la página
-├── popup/
-│   ├── popup.html               # Popup de la extensión
-│   ├── popup.css
-│   └── popup.js
 ├── lib/
 │   └── html-to-image.js         # Solución complementaria de captura de página completa (SVG foreignObject)
 ├── assets/

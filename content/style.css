@@ -90,6 +90,23 @@
   pointer-events: none;
 }
 
+/* 标尺拖动提示（鼠标悬停时显示在鼠标右侧） */
+.sss-ruler-tooltip {
+  position: fixed;
+  z-index: calc(var(--sss-z-ruler) + 1);
+  padding: 6px 10px;
+  font-size: 12px;
+  color: #fff;
+  background: rgba(17, 24, 39, 0.85);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  font-family: var(--sss-font);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  transform: translate(0, 0);
+}
+
 /* ---------- 浮动工具条 ---------- */
 .sss-toolbar {
   position: fixed;
@@ -520,4 +537,139 @@
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
   100% { transform: scale(1); }
+}
+
+/* ---------- 设置模态框：操作按钮区（含“如何使用”按钮） ---------- */
+.sss-settings-actions {
+  flex-wrap: wrap;
+}
+
+/* ---------- “如何使用”讲解模态框 ---------- */
+.sss-howto-modal {
+  width: 560px;
+  max-width: 92vw;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.sss-howto-langbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  background: rgba(37, 99, 235, 0.06);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 10px;
+}
+
+.sss-howto-lang-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sss-text);
+  white-space: nowrap;
+}
+
+.sss-howto-lang-select {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  background: #fff;
+  border: 1px solid var(--sss-border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--sss-text);
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sss-howto-lang-select:focus {
+  border-color: var(--sss-accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.sss-howto-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 6px 4px 2px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.sss-howto-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sss-howto-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.sss-howto-section {
+  margin-bottom: 18px;
+}
+
+.sss-howto-section:last-child {
+  margin-bottom: 0;
+}
+
+.sss-howto-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sss-accent);
+}
+
+.sss-howto-section-title::before {
+  content: '';
+  width: 4px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--sss-accent);
+}
+
+.sss-howto-steps {
+  margin: 0;
+  padding-left: 20px;
+  list-style: none;
+  counter-reset: sss-step;
+}
+
+.sss-howto-step {
+  position: relative;
+  margin: 0 0 6px;
+  padding-left: 28px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--sss-text);
+}
+
+.sss-howto-step::before {
+  counter-increment: sss-step;
+  content: counter(sss-step);
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--sss-accent);
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sss-howto-modal .sss-modal-actions {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--sss-border);
 }

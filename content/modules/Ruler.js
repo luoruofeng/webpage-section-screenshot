@@ -26,6 +26,7 @@
       this.hRuler = null; // 横向标尺 canvas
       this.vRuler = null; // 纵向标尺 canvas
       this.corner = null; // 左上角方块
+      this.tooltip = null; // 鼠标悬停提示
 
       // 拖拽创建参考线回调
       this.onDragStart = null;
@@ -55,6 +56,13 @@
       this.vRuler = document.createElement('canvas');
       this.vRuler.className = 'sss-ruler-vertical';
       this.vRuler.style.top = this.size + 'px';
+
+      // 鼠标悬停提示（跟随鼠标显示在右侧）
+      this.tooltip = document.createElement('div');
+      this.tooltip.className = 'sss-ruler-tooltip';
+      this.tooltip.textContent = SSS.I18n.t('rulerDragHint');
+      this.tooltip.style.display = 'none';
+      this.host.appendChild(this.tooltip);
 
       this.host.appendChild(this.corner);
       this.host.appendChild(this.hRuler);
@@ -101,6 +109,43 @@
         this._resize();
         this.render();
       });
+
+      // 鼠标悬停在标尺上时，在鼠标右侧显示拖动提示
+      [this.hRuler, this.vRuler].forEach((ruler) => {
+        ruler.addEventListener('pointerenter', () => this._showTooltip());
+        ruler.addEventListener('pointerleave', () => this._hideTooltip());
+        ruler.addEventListener('pointermove', (e) => this._moveTooltip(e.clientX, e.clientY));
+      });
+    }
+
+    /* ---------- 悬停提示 ---------- */
+
+    /**
+     * 显示标尺拖动提示
+     */
+    _showTooltip() {
+      if (!this.tooltip) return;
+      this.tooltip.style.display = 'block';
+    }
+
+    /**
+     * 隐藏标尺拖动提示
+     */
+    _hideTooltip() {
+      if (!this.tooltip) return;
+      this.tooltip.style.display = 'none';
+    }
+
+    /**
+     * 移动提示到鼠标右侧
+     * @param {number} clientX 鼠标横坐标
+     * @param {number} clientY 鼠标纵坐标
+     */
+    _moveTooltip(clientX, clientY) {
+      if (!this.tooltip) return;
+      const offset = 12; // 提示与鼠标之间的间距
+      this.tooltip.style.left = clientX + offset + 'px';
+      this.tooltip.style.top = clientY + offset + 'px';
     }
 
     /**
@@ -265,6 +310,7 @@
       this.hRuler.style.display = display;
       this.vRuler.style.display = display;
       this.corner.style.display = display;
+      if (!visible) this._hideTooltip();
     }
 
     destroy() {
@@ -272,6 +318,7 @@
       this.corner?.remove();
       this.hRuler?.remove();
       this.vRuler?.remove();
+      this.tooltip?.remove();
     }
   }
 

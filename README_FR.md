@@ -105,10 +105,6 @@ webpage-section-screenshot/
 │       ├── CoffeeModal.js       # Fenêtre modale Offrir un café (don)
 │       ├── ClassSelectionModal.js # Fenêtre modale de saisie pour la sélection automatique par classe
 │       └── Toolbar.js           # Barre d'outils flottante dans la page
-├── popup/
-│   ├── popup.html               # Popup de l'extension
-│   ├── popup.css
-│   └── popup.js
 ├── lib/
 │   └── html-to-image.js         # Solution complémentaire de capture plein écran (SVG foreignObject)
 ├── assets/

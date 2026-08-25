@@ -105,10 +105,6 @@ webpage-section-screenshot/
 │       ├── CoffeeModal.js       # Buy-a-coffee (donation) modal
 │       ├── ClassSelectionModal.js # Class auto-selection input modal
 │       └── Toolbar.js           # In-page floating toolbar
-├── popup/
-│   ├── popup.html               # Extension popup
-│   ├── popup.css
-│   └── popup.js
 ├── lib/
 │   └── html-to-image.js         # Supplementary full-page screenshot (SVG foreignObject)
 ├── assets/

@@ -47,11 +47,12 @@
       layer.id = 'sss-guide-layer';
       layer.style.cssText =
         'position:absolute;top:0;left:0;width:0;height:0;' +
-        'pointer-events:none;z-index:2147483500;';
+        // 必须低于 Shadow DOM 宿主(2147483000)的 z-index，避免参考线盖住 Shadow 内模态框。
+        'pointer-events:none;z-index:2147482400;';
       // 注入参考线样式（带前缀，仅作用于本层）
       const style = document.createElement('style');
       style.textContent = `
-        #sss-guide-layer{position:absolute;top:0;left:0;width:0;height:0;pointer-events:none;z-index:2147483500;}
+        #sss-guide-layer{position:absolute;top:0;left:0;width:0;height:0;pointer-events:none;z-index:2147482400;}
         #sss-guide-layer .sss-guide{position:absolute;pointer-events:auto;background:#2563eb;transition:background-color .15s ease;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;}
         #sss-guide-layer .sss-guide:hover{background:#1d4ed8;}
         #sss-guide-layer .sss-guide-vertical{top:0;bottom:0;width:2px;cursor:ew-resize;}
@@ -445,7 +446,8 @@
     _showTooltip(vertical, x, y, text = '') {
       this._tooltip = document.createElement('div');
       this._tooltip.style.cssText =
-        'position:fixed;z-index:2147484600;background:#111827;color:#fff;' +
+        // 低于 Shadow DOM 宿主(2147483000)，避免盖住模态框
+        'position:fixed;z-index:2147482300;background:#111827;color:#fff;' +
         'font-size:11px;padding:3px 8px;border-radius:4px;pointer-events:none;' +
         'white-space:nowrap;font-family:-apple-system,sans-serif;';
       this._tooltip.textContent = text;

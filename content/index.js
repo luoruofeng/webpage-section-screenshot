@@ -31,10 +31,14 @@
       this.selections = new SSS.SelectionManager(this.shadow);
       this.progressModal = new SSS.ProgressModal(this.shadow);
       this.settingsModal = new SSS.SettingsModal(this.shadow, this.storage);
+      this.howToUseModal = new SSS.HowToUseModal(this.shadow, this.storage);
       this.coffeeModal = new SSS.CoffeeModal(this.shadow);
       this.classSelectionModal = new SSS.ClassSelectionModal(this.shadow);
       this.screenshot = new SSS.ScreenshotManager(this.background, this.progressModal);
       this.toolbar = new SSS.Toolbar(this.shadow);
+
+      // 主菜单（工具条）显隐状态：默认显示
+      this._menuVisible = true;
 
       this._wire();
     }
@@ -116,6 +120,11 @@
 
       this.settingsModal.onShortcutChange = (newShortcut) => {
         this.toolbar.updateShortcut(newShortcut);
+      };
+
+      // 打开“如何使用”讲解模态框
+      this.settingsModal.onOpenHowTo = () => {
+        this.howToUseModal.show();
       };
 
       // 界面语言变化：刷新所有模块的文案
@@ -215,6 +224,22 @@
     }
 
     /**
+     * 切换主菜单（工具条）的显示 / 隐藏，并同步控制标尺的显示 / 隐藏
+     * 主菜单隐藏时标尺同步隐藏；主菜单显示时标尺同步显示。
+     * @returns {boolean} 切换后的主菜单可见状态
+     */
+    toggleMenu() {
+      this._menuVisible = !this._menuVisible;
+      this.toolbar?.setVisible(this._menuVisible);
+      this.ruler?.setVisible(this._menuVisible);
+      // 主菜单恢复显示时，同步标尺开关按钮文案，保证状态一致
+      if (this._menuVisible) {
+        this.toolbar?.updateToggleLabel?.(this.ruler.visible);
+      }
+      return this._menuVisible;
+    }
+
+    /**
      * 控制“截图干扰元素”的可见性（标尺/参考线/工具条/选区框），保留进度模态框可见
      * @param {boolean} visible
      */
@@ -277,11 +302,16 @@
             sendResponse({ ok: true, visible: this.ruler.visible });
             return false;
 
+          case SSS.MSG.TOGGLE_MENU:
+            sendResponse({ ok: true, visible: this.toggleMenu() });
+            return false;
+
           case SSS.MSG.GET_STATE:
             sendResponse({
               ok: true,
               guideCount: this.guides.count,
               rulerVisible: this.ruler.visible,
+              menuVisible: this._menuVisible,
             });
             return false;
 

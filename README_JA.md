@@ -105,10 +105,6 @@ webpage-section-screenshot/
 │       ├── CoffeeModal.js       # コーヒーを（寄付）モーダル
 │       ├── ClassSelectionModal.js # Class 自動選択の入力モーダル
 │       └── Toolbar.js           # ページ内フローティングツールバー
-├── popup/
-│   ├── popup.html               # 拡張機能ポップアップ
-│   ├── popup.css
-│   └── popup.js
 ├── lib/
 │   └── html-to-image.js         # 全ページスクリーンショット補足（SVG foreignObject）
 ├── assets/

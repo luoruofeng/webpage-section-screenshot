@@ -27,7 +27,9 @@
       layer.id = 'sss-selection-layer';
       layer.style.cssText =
         'position:absolute;top:0;left:0;width:0;height:0;' +
-        'pointer-events:none;z-index:2147483501;';
+        // 必须低于 Shadow DOM 宿主(2147483000)的 z-index，
+        // 否则选区框/参考线会盖住 Shadow 内的模态框（进度/关闭/打开文件夹按钮）。
+        'pointer-events:none;z-index:2147482500;';
       
       const style = document.createElement('style');
       style.textContent = `

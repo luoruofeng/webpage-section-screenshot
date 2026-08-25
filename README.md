@@ -105,10 +105,6 @@ webpage-section-screenshot/
 │       ├── CoffeeModal.js       # 请喝咖啡（赞赏）模态框
 │       ├── ClassSelectionModal.js # 按 Class 自动选区输入模态框
 │       └── Toolbar.js           # 页面内浮动工具条
-├── popup/
-│   ├── popup.html               # 插件弹窗
-│   ├── popup.css
-│   └── popup.js
 ├── lib/
 │   └── html-to-image.js         # 整页截图补充方案（SVG foreignObject）
 ├── assets/

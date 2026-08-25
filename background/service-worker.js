@@ -192,3 +192,43 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // 供 MV3 生命周期管理，Service Worker 在闲置时会被回收，
 // 所有状态通过消息驱动，无持久化全局变量。
+
+/**
+ * 向指定标签页发送消息，并返回其响应
+ * @param {number} tabId
+ * @param {Object} message
+ * @returns {Promise<Object|undefined>}
+ */
+function sendToTab(tabId, message) {
+  return new Promise((resolve) => {
+    chrome.tabs.sendMessage(tabId, message, (response) => {
+      if (chrome.runtime.lastError) {
+        // 页面尚未注入 content script 时忽略
+        resolve(undefined);
+        return;
+      }
+      resolve(response);
+    });
+  });
+}
+
+/**
+ * 根据主菜单可见状态更新插件图标角标（badge）
+ * @param {boolean} visible 主菜单（工具条）当前是否可见
+ */
+function updateBadge(visible) {
+  chrome.action.setBadgeBackgroundColor({ color: visible ? '#2563eb' : '#9ca3af' });
+  chrome.action.setBadgeText({ text: visible ? '' : 'OFF' });
+}
+
+/**
+ * 点击插件 ICON：切换页面右上角主菜单（工具条）的显示 / 隐藏，
+ * 并同步控制标尺的显示 / 隐藏（两者状态一致）。
+ */
+chrome.action.onClicked.addListener(async (tab) => {
+  if (!tab?.id) return;
+  const response = await sendToTab(tab.id, { type: 'SSS_TOGGLE_MENU' });
+  if (response?.ok) {
+    updateBadge(response.visible);
+  }
+});

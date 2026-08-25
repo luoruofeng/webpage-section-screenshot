@@ -38,6 +38,7 @@
       toolbarSettings: '设置',
       toolbarCoffee: '请作者喝咖啡',
       guideCount: '参考线：{count} 条',
+      rulerDragHint: '点击鼠标左键不放进行参考线的拖动',
       // 设置
       settingsTitle: '插件设置',
       settingsShortcutLabel: '开启选区框快捷键',
@@ -46,6 +47,11 @@
       settingsLanguageTip: '切换后界面语言立即生效',
       settingsSave: '保存设置',
       settingsClose: '关闭',
+      settingsHowTo: '如何使用',
+      // 如何使用模态框
+      howtoTitle: '如何使用本插件',
+      howtoLangLabel: '讲解语言',
+      howtoClose: '关闭',
       // 进度模态框
       progressTitle: '正在保存 PNG 图片',
       progressPreparing: '正在准备...',
@@ -96,6 +102,68 @@
       popupStartFail: '无法启动截图：{msg}',
       popupClearFail: '无法清空参考线：{msg}',
       popupToggleFail: '无法切换标尺：{msg}',
+      // 使用指南（分步骤讲解，各语言由大模型直接提供，不依赖翻译脚本）
+      guide: [
+        {
+          title: '插件简介',
+          steps: [
+            '这是一款用于“网页分区截图”的浏览器插件。',
+            '你可以在网页上自由拖出参考线，将页面划分为多个区域。',
+            '每个区域都会被单独保存为一张高清 PNG 图片。',
+          ],
+        },
+        {
+          title: '使用标尺添加参考线',
+          steps: [
+            '打开网页后，页面顶部和左侧会显示 Photoshop 风格的标尺。',
+            '按住鼠标左键，从顶部标尺向下拖动，可添加一条水平参考线。',
+            '按住鼠标左键，从左侧标尺向右拖动，可添加一条垂直参考线。',
+            '点击任意参考线，会出现“删除”按钮，可将其删除。',
+          ],
+        },
+        {
+          title: '使用选区框',
+          steps: [
+            '点击工具条上的“开启选区框”按钮（或按快捷键，默认 P）。',
+            '在页面上按下并拖动鼠标，即可绘制一个自由选区。',
+            '选区框适合截取不规则的矩形区域。',
+            '按 ESC 键可退出选区状态。',
+          ],
+        },
+        {
+          title: '自动选区（按 Class）',
+          steps: [
+            '点击工具条上的“自动选区”按钮。',
+            '输入网页元素的 Class 名称（例如 card-item）。',
+            '插件会自动为所有匹配该 Class 的元素创建选区框。',
+          ],
+        },
+        {
+          title: '开始裁切并保存 PNG',
+          steps: [
+            '划分好区域后，点击工具条顶部的“开始裁切 PNG”按钮。',
+            '插件会按区域逐张截取网页内容并保存为 PNG 图片。',
+            '图片会按照“序号_网页名称.png”的规则自动命名。',
+            '保存完成后，可点击“打开保存的文件夹”查看结果。',
+          ],
+        },
+        {
+          title: '设置与快捷键',
+          steps: [
+            '点击工具条上的“设置”按钮，可修改选区框快捷键。',
+            '在“界面语言”下拉框中，可随时切换插件界面语言。',
+            '点击“如何使用”按钮，可随时查看本使用说明。',
+          ],
+        },
+        {
+          title: '小贴士',
+          steps: [
+            '参考线与选区框可以混合使用，灵活划分复杂区域。',
+            '截图过程中会自动隐藏插件覆盖层，不会干扰截图。',
+            '如果某个 Class 找不到可见元素，插件会给出提示。',
+          ],
+        },
+      ],
     },
     en: {
       toolbarStart: 'Start Crop PNG',
@@ -108,6 +176,7 @@
       toolbarSettings: 'Settings',
       toolbarCoffee: 'Buy Author a Coffee',
       guideCount: 'Guides: {count}',
+      rulerDragHint: 'Hold the left mouse button and drag to create a guide',
       settingsTitle: 'Plugin Settings',
       settingsShortcutLabel: 'Selection Box Shortcut',
       settingsShortcutTip: 'Click the box above, then press a key to change it',
@@ -115,6 +184,10 @@
       settingsLanguageTip: 'Takes effect immediately after switching',
       settingsSave: 'Save Settings',
       settingsClose: 'Close',
+      settingsHowTo: 'How to Use',
+      howtoTitle: 'How to Use This Plugin',
+      howtoLangLabel: 'Guide Language',
+      howtoClose: 'Close',
       progressTitle: 'Saving PNG Images',
       progressPreparing: 'Preparing...',
       progressCapturing: 'Capturing page content {done}/{total}...',
@@ -158,6 +231,68 @@
       popupStartFail: 'Unable to start screenshot: {msg}',
       popupClearFail: 'Unable to clear guides: {msg}',
       popupToggleFail: 'Unable to toggle ruler: {msg}',
+      // Guide content (provided directly by the model for each language, no translation scripts)
+      guide: [
+        {
+          title: 'Plugin Overview',
+          steps: [
+            'This is a browser extension for taking section screenshots of webpages.',
+            'You can freely drag out guides on the page to divide it into multiple areas.',
+            'Each area is saved separately as a high-resolution PNG image.',
+          ],
+        },
+        {
+          title: 'Adding Guides with the Ruler',
+          steps: [
+            'After opening a page, Photoshop-style rulers appear at the top and left.',
+            'Hold the left mouse button and drag downward from the top ruler to add a horizontal guide.',
+            'Hold the left mouse button and drag rightward from the left ruler to add a vertical guide.',
+            'Click any guide to reveal a "Delete" button and remove it.',
+          ],
+        },
+        {
+          title: 'Using the Selection Box',
+          steps: [
+            'Click the "Enable Selection" button on the toolbar (or use the shortcut, P by default).',
+            'Press and drag the mouse on the page to draw a free-form selection.',
+            'The selection box is ideal for capturing irregular rectangular areas.',
+            'Press ESC to exit selection mode.',
+          ],
+        },
+        {
+          title: 'Auto-Select (by Class)',
+          steps: [
+            'Click the "Auto Select" button on the toolbar.',
+            'Enter a CSS Class name of the elements (e.g. card-item).',
+            'Selections are automatically created for all elements matching that Class.',
+          ],
+        },
+        {
+          title: 'Starting the Crop and Saving PNG',
+          steps: [
+            'After dividing the areas, click the "Start Crop PNG" button at the top of the toolbar.',
+            'The extension captures each area one by one and saves them as PNG images.',
+            'Images are automatically named using the pattern "index_page-name.png".',
+            'After saving, click "Open Saved Folder" to view the results.',
+          ],
+        },
+        {
+          title: 'Settings and Shortcuts',
+          steps: [
+            'Click the "Settings" button on the toolbar to change the selection shortcut.',
+            'In the "Interface Language" dropdown, you can switch the plugin UI language anytime.',
+            'Click "How to Use" to view this guide at any time.',
+          ],
+        },
+        {
+          title: 'Tips',
+          steps: [
+            'Guides and selection boxes can be combined to flexibly divide complex areas.',
+            'The plugin overlay hides automatically during screenshots, so it never interferes.',
+            'If a Class has no visible elements, the plugin will show a hint.',
+          ],
+        },
+      ],
     },
     ja: {
       toolbarStart: 'PNG 切り出し開始',
@@ -170,6 +305,7 @@
       toolbarSettings: '設定',
       toolbarCoffee: '作者にコーヒーを',
       guideCount: 'ガイド：{count} 本',
+      rulerDragHint: '左マウスボタンを押したままドラッグしてガイドを作成します',
       settingsTitle: 'プラグイン設定',
       settingsShortcutLabel: '選択枠のショートカット',
       settingsShortcutTip: '上のボックスをクリックしてキーを押すと変更できます',
@@ -177,6 +313,10 @@
       settingsLanguageTip: '切り替えるとすぐに反映されます',
       settingsSave: '設定を保存',
       settingsClose: '閉じる',
+      settingsHowTo: '使い方',
+      howtoTitle: 'このプラグインの使い方',
+      howtoLangLabel: '解説言語',
+      howtoClose: '閉じる',
       progressTitle: 'PNG 画像を保存中',
       progressPreparing: '準備中...',
       progressCapturing: 'ページ内容を取得中 {done}/{total}...',
@@ -220,6 +360,68 @@
       popupStartFail: 'スクリーンショットを開始できません：{msg}',
       popupClearFail: 'ガイドをクリアできません：{msg}',
       popupToggleFail: 'ルーラーを切り替えられません：{msg}',
+      // 解説コンテンツ（各言語は大モデルが直接提供、翻訳スクリプト不使用）
+      guide: [
+        {
+          title: 'プラグイン概要',
+          steps: [
+            'これはウェブページを区画ごとにスクリーンショットできるブラウザ拡張機能です。',
+            'ページ上にガイドを自由にドラッグして、複数の領域に分割できます。',
+            '各領域はそれぞれ高解像度の PNG 画像として保存されます。',
+          ],
+        },
+        {
+          title: 'ルーラーでガイドを追加',
+          steps: [
+            'ページを開くと、上部と左側に Photoshop 風のルーラーが表示されます。',
+            '左マウスボタンを押したまま上部ルーラーから下へドラッグすると、水平ガイドを追加できます。',
+            '左マウスボタンを押したまま左側ルーラーから右へドラッグすると、垂直ガイドを追加できます。',
+            'ガイドをクリックすると「削除」ボタンが表示され、削除できます。',
+          ],
+        },
+        {
+          title: '選択枠を使う',
+          steps: [
+            'ツールバーの「選択枠を有効化」ボタンをクリックします（ショートカット、デフォルトは P）。',
+            'ページ上でマウスを押しながらドラッグすると、自由な選択枠を描けます。',
+            '選択枠は不規則な矩形領域の切り取りに適しています。',
+            'ESC キーで選択状態を終了できます。',
+          ],
+        },
+        {
+          title: '自動選択（Class）',
+          steps: [
+            'ツールバーの「自動選択」ボタンをクリックします。',
+            '要素の CSS Class 名を入力します（例: card-item）。',
+            'その Class に一致するすべての要素に選択枠が自動作成されます。',
+          ],
+        },
+        {
+          title: '切り出しを開始して PNG を保存',
+          steps: [
+            '領域を分割したら、ツールバー上部の「PNG 切り出し開始」ボタンをクリックします。',
+            '領域ごとにページ内容を順番にキャプチャし、PNG 画像として保存します。',
+            '画像は「連番_ページ名.png」の規則で自動的に命名されます。',
+            '保存後、「保存先フォルダを開く」をクリックして結果を確認できます。',
+          ],
+        },
+        {
+          title: '設定とショートカット',
+          steps: [
+            'ツールバーの「設定」ボタンをクリックすると、選択ショートカットを変更できます。',
+            '「表示言語」ドロップダウンで、いつでもプラグインの UI 言語を切り替えられます。',
+            '「使い方」ボタンをクリックすると、いつでもこの解説を表示できます。',
+          ],
+        },
+        {
+          title: 'ヒント',
+          steps: [
+            'ガイドと選択枠を組み合わせて、複雑な領域を柔軟に分割できます。',
+            'スクリーンショット中はプラグインのオーバーレイが自動的に非表示になり、写り込みません。',
+            'Class に対応する表示要素が見つからない場合は、ヒントが表示されます。',
+          ],
+        },
+      ],
     },
     ko: {
       toolbarStart: 'PNG 자르기 시작',
@@ -232,6 +434,7 @@
       toolbarSettings: '설정',
       toolbarCoffee: '작성자에게 커피 쏘기',
       guideCount: '가이드: {count}개',
+      rulerDragHint: '마우스 왼쪽 버튼을 누른 채 드래그하여 가이드를 만듭니다',
       settingsTitle: '플러그인 설정',
       settingsShortcutLabel: '선택 영역 단축키',
       settingsShortcutTip: '위 상자를 클릭한 후 키를 누르면 변경됩니다',
@@ -239,6 +442,10 @@
       settingsLanguageTip: '전환 즉시 적용됩니다',
       settingsSave: '설정 저장',
       settingsClose: '닫기',
+      settingsHowTo: '사용 방법',
+      howtoTitle: '이 플러그인 사용 방법',
+      howtoLangLabel: '설명 언어',
+      howtoClose: '닫기',
       progressTitle: 'PNG 이미지 저장 중',
       progressPreparing: '준비 중...',
       progressCapturing: '페이지 콘텐츠 캡처 중 {done}/{total}...',
@@ -282,6 +489,68 @@
       popupStartFail: '스크린샷을 시작할 수 없습니다: {msg}',
       popupClearFail: '가이드를 지울 수 없습니다: {msg}',
       popupToggleFail: '눈금자를 전환할 수 없습니다: {msg}',
+      // 가이드 내용 (각 언어는 대형 모델이 직접 제공, 번역 스크립트 없음)
+      guide: [
+        {
+          title: '플러그인 개요',
+          steps: [
+            '웹페이지를 구역별로 스크린샷할 수 있는 브라우저 확장 프로그램입니다.',
+            '페이지에 가이드를 자유롭게 드래그하여 여러 영역으로 나눌 수 있습니다.',
+            '각 영역은 고해상도 PNG 이미지로 개별 저장됩니다.',
+          ],
+        },
+        {
+          title: '눈금자로 가이드 추가',
+          steps: [
+            '페이지를 열면 상단과 왼쪽에 Photoshop 스타일의 눈금자가 표시됩니다.',
+            '왼쪽 마우스 버튼을 누른 채 상단 눈금자에서 아래로 드래그하면 가로 가이드를 추가할 수 있습니다.',
+            '왼쪽 마우스 버튼을 누른 채 왼쪽 눈금자에서 오른쪽으로 드래그하면 세로 가이드를 추가할 수 있습니다.',
+            '가이드를 클릭하면 "삭제" 버튼이 나타나 제거할 수 있습니다.',
+          ],
+        },
+        {
+          title: '선택 영역 사용',
+          steps: [
+            '도구 모음의 "선택 영역 켜기" 버튼을 클릭합니다 (단축키, 기본값 P).',
+            '페이지에서 마우스를 누른 채 드래그하면 자유 선택 영역을 그릴 수 있습니다.',
+            '선택 영역은 불규칙한 사각형 영역을 캡처하는 데 적합합니다.',
+            'ESC 키를 누르면 선택 상태를 종료합니다.',
+          ],
+        },
+        {
+          title: '자동 선택 (Class)',
+          steps: [
+            '도구 모음의 "자동 선택" 버튼을 클릭합니다.',
+            '요소의 CSS Class 이름을 입력합니다 (예: card-item).',
+            '해당 Class와 일치하는 모든 요소에 선택 영역이 자동으로 생성됩니다.',
+          ],
+        },
+        {
+          title: '자르기 시작 및 PNG 저장',
+          steps: [
+            '영역을 나눈 후 도구 모음 상단의 "PNG 자르기 시작" 버튼을 클릭합니다.',
+            '확장 프로그램이 영역별로 페이지를 순서대로 캡처하여 PNG 이미지로 저장합니다.',
+            '이미지는 "번호_페이지명.png" 규칙으로 자동 이름이 지정됩니다.',
+            '저장 후 "저장 폴더 열기"를 클릭해 결과를 확인할 수 있습니다.',
+          ],
+        },
+        {
+          title: '설정 및 단축키',
+          steps: [
+            '도구 모음의 "설정" 버튼을 클릭하면 선택 단축키를 변경할 수 있습니다.',
+            '"인터페이스 언어" 드롭다운에서 언제든지 플러그인 UI 언어를 전환할 수 있습니다.',
+            '"사용 방법" 버튼을 클릭하면 언제든지 이 가이드를 볼 수 있습니다.',
+          ],
+        },
+        {
+          title: '팁',
+          steps: [
+            '가이드와 선택 영역을 함께 사용하여 복잡한 영역을 유연하게 나눌 수 있습니다.',
+            '스크린샷 중에는 플러그인 오버레이가 자동으로 숨겨져 화면에 포함되지 않습니다.',
+            'Class에 해당하는 표시 요소가 없으면 안내 메시지가 표시됩니다.',
+          ],
+        },
+      ],
     },
     es: {
       toolbarStart: 'Iniciar recorte PNG',
@@ -294,6 +563,7 @@
       toolbarSettings: 'Ajustes',
       toolbarCoffee: 'Invitar al autor a un café',
       guideCount: 'Guías: {count}',
+      rulerDragHint: 'Mantén pulsado el botón izquierdo del ratón y arrastra para crear una guía',
       settingsTitle: 'Ajustes del plugin',
       settingsShortcutLabel: 'Atajo de selección',
       settingsShortcutTip: 'Haz clic en el cuadro de arriba y pulsa una tecla para cambiarlo',
@@ -301,6 +571,10 @@
       settingsLanguageTip: 'Se aplica de inmediato al cambiar',
       settingsSave: 'Guardar ajustes',
       settingsClose: 'Cerrar',
+      settingsHowTo: 'Cómo usar',
+      howtoTitle: 'Cómo usar este plugin',
+      howtoLangLabel: 'Idioma de la guía',
+      howtoClose: 'Cerrar',
       progressTitle: 'Guardando imágenes PNG',
       progressPreparing: 'Preparando...',
       progressCapturing: 'Capturando contenido {done}/{total}...',
@@ -344,6 +618,68 @@
       popupStartFail: 'No se pudo iniciar la captura: {msg}',
       popupClearFail: 'No se pudieron limpiar las guías: {msg}',
       popupToggleFail: 'No se pudo alternar la regla: {msg}',
+      // Contenido de la guía (proporcionado directamente por el modelo para cada idioma, sin scripts de traducción)
+      guide: [
+        {
+          title: 'Resumen del plugin',
+          steps: [
+            'Esta es una extensión de navegador para tomar capturas de secciones de páginas web.',
+            'Puedes arrastrar libremente guías sobre la página para dividirla en varias áreas.',
+            'Cada área se guarda por separado como una imagen PNG de alta resolución.',
+          ],
+        },
+        {
+          title: 'Añadir guías con la regla',
+          steps: [
+            'Al abrir una página, aparecen reglas estilo Photoshop arriba y a la izquierda.',
+            'Mantén pulsado el botón izquierdo y arrastra hacia abajo desde la regla superior para añadir una guía horizontal.',
+            'Mantén pulsado el botón izquierdo y arrastra hacia la derecha desde la regla izquierda para añadir una guía vertical.',
+            'Haz clic en una guía para ver el botón "Eliminar" y quitarla.',
+          ],
+        },
+        {
+          title: 'Usar el cuadro de selección',
+          steps: [
+            'Haz clic en el botón "Activar selección" de la barra de herramientas (o usa el atajo, P por defecto).',
+            'Pulsa y arrastra el ratón sobre la página para dibujar una selección libre.',
+            'El cuadro de selección es ideal para capturar áreas rectangulares irregulares.',
+            'Pulsa ESC para salir del modo selección.',
+          ],
+        },
+        {
+          title: 'Selección automática (por Class)',
+          steps: [
+            'Haz clic en el botón "Selección automática" de la barra de herramientas.',
+            'Introduce el nombre de una Class CSS de los elementos (p. ej. card-item).',
+            'Se crean automáticamente selecciones para todos los elementos que coinciden con esa Class.',
+          ],
+        },
+        {
+          title: 'Iniciar el recorte y guardar PNG',
+          steps: [
+            'Tras dividir las áreas, haz clic en el botón "Iniciar recorte PNG" en la parte superior de la barra.',
+            'La extensión captura cada área una a una y las guarda como imágenes PNG.',
+            'Las imágenes se nombran automáticamente con el patrón "índice_nombre-de-página.png".',
+            'Después de guardar, haz clic en "Abrir carpeta de guardado" para ver los resultados.',
+          ],
+        },
+        {
+          title: 'Ajustes y atajos',
+          steps: [
+            'Haz clic en el botón "Ajustes" de la barra para cambiar el atajo de selección.',
+            'En el desplegable "Idioma de interfaz", puedes cambiar el idioma de la interfaz en cualquier momento.',
+            'Haz clic en "Cómo usar" para ver esta guía en cualquier momento.',
+          ],
+        },
+        {
+          title: 'Consejos',
+          steps: [
+            'Puedes combinar guías y cuadros de selección para dividir áreas complejas de forma flexible.',
+            'Durante la captura, la superposición del plugin se oculta automáticamente para no interferir.',
+            'Si una Class no tiene elementos visibles, el plugin mostrará un aviso.',
+          ],
+        },
+      ],
     },
     fr: {
       toolbarStart: 'Démarrer le recadrage PNG',
@@ -356,6 +692,7 @@
       toolbarSettings: 'Paramètres',
       toolbarCoffee: 'Offrir un café à l’auteur',
       guideCount: 'Guides : {count}',
+      rulerDragHint: 'Maintenez le bouton gauche de la souris et faites glisser pour créer un guide',
       settingsTitle: 'Paramètres du plugin',
       settingsShortcutLabel: 'Raccourci de sélection',
       settingsShortcutTip: 'Cliquez sur le cadre ci-dessus puis appuyez sur une touche pour le modifier',
@@ -363,6 +700,10 @@
       settingsLanguageTip: 'Appliqué immédiatement après le changement',
       settingsSave: 'Enregistrer',
       settingsClose: 'Fermer',
+      settingsHowTo: 'Comment utiliser',
+      howtoTitle: 'Comment utiliser ce plugin',
+      howtoLangLabel: 'Langue du guide',
+      howtoClose: 'Fermer',
       progressTitle: 'Enregistrement des images PNG',
       progressPreparing: 'Préparation...',
       progressCapturing: 'Capture du contenu {done}/{total}...',
@@ -406,6 +747,68 @@
       popupStartFail: 'Impossible de démarrer la capture : {msg}',
       popupClearFail: 'Impossible d\'effacer les guides : {msg}',
       popupToggleFail: 'Impossible de basculer la règle : {msg}',
+      // Contenu du guide (fourni directement par le modèle pour chaque langue, aucun script de traduction)
+      guide: [
+        {
+          title: 'Présentation du plugin',
+          steps: [
+            'Il s\'agit d\'une extension de navigateur pour capturer des sections de pages web.',
+            'Vous pouvez faire glisser librement des guides sur la page pour la diviser en plusieurs zones.',
+            'Chaque zone est enregistrée séparément comme image PNG haute résolution.',
+          ],
+        },
+        {
+          title: 'Ajouter des guides avec la règle',
+          steps: [
+            'À l\'ouverture d\'une page, des règles de style Photoshop apparaissent en haut et à gauche.',
+            'Maintenez le bouton gauche et faites glisser vers le bas depuis la règle supérieure pour ajouter un guide horizontal.',
+            'Maintenez le bouton gauche et faites glisser vers la droite depuis la règle gauche pour ajouter un guide vertical.',
+            'Cliquez sur un guide pour afficher le bouton "Supprimer" et le retirer.',
+          ],
+        },
+        {
+          title: 'Utiliser le cadre de sélection',
+          steps: [
+            'Cliquez sur le bouton "Activer la sélection" de la barre d\'outils (ou utilisez le raccourci, P par défaut).',
+            'Appuyez et faites glisser la souris sur la page pour dessiner une sélection libre.',
+            'Le cadre de sélection convient aux zones rectangulaires irrégulières.',
+            'Appuyez sur ESC pour quitter le mode sélection.',
+          ],
+        },
+        {
+          title: 'Sélection automatique (par Class)',
+          steps: [
+            'Cliquez sur le bouton "Sélection auto" de la barre d\'outils.',
+            'Saisissez un nom de Class CSS des éléments (ex. card-item).',
+            'Des sélections sont créées automatiquement pour tous les éléments correspondant à cette Class.',
+          ],
+        },
+        {
+          title: 'Lancer le recadrage et enregistrer en PNG',
+          steps: [
+            'Après avoir divisé les zones, cliquez sur le bouton "Démarrer le recadrage PNG" en haut de la barre.',
+            'L\'extension capture chaque zone une par une et les enregistre en PNG.',
+            'Les images sont nommées automatiquement selon le motif "index_nom-de-page.png".',
+            'Après l\'enregistrement, cliquez sur "Ouvrir le dossier de sauvegarde" pour voir les résultats.',
+          ],
+        },
+        {
+          title: 'Paramètres et raccourcis',
+          steps: [
+            'Cliquez sur le bouton "Paramètres" de la barre pour modifier le raccourci de sélection.',
+            'Dans la liste déroulante "Langue de l\'interface", vous pouvez changer la langue de l\'interface à tout moment.',
+            'Cliquez sur "Comment utiliser" pour voir ce guide à tout moment.',
+          ],
+        },
+        {
+          title: 'Conseils',
+          steps: [
+            'Vous pouvez combiner guides et cadres de sélection pour diviser des zones complexes avec souplesse.',
+            'Pendant la capture, la superposition du plugin se masque automatiquement pour ne pas interférer.',
+            'Si une Class n\'a aucun élément visible, le plugin affichera une astuce.',
+          ],
+        },
+      ],
     },
     de: {
       toolbarStart: 'PNG-Zuschnitt starten',
@@ -418,6 +821,7 @@
       toolbarSettings: 'Einstellungen',
       toolbarCoffee: 'Autor einen Kaffee ausgeben',
       guideCount: 'Hilfslinien: {count}',
+      rulerDragHint: 'Halten Sie die linke Maustaste gedrückt und ziehen Sie, um eine Hilfslinie zu erstellen',
       settingsTitle: 'Plugin-Einstellungen',
       settingsShortcutLabel: 'Auswahl-Tastenkürzel',
       settingsShortcutTip: 'Klicken Sie oben auf das Feld und drücken Sie eine Taste, um es zu ändern',
@@ -425,6 +829,10 @@
       settingsLanguageTip: 'Wird nach dem Wechsel sofort angewendet',
       settingsSave: 'Einstellungen speichern',
       settingsClose: 'Schließen',
+      settingsHowTo: 'So wird\'s benutzt',
+      howtoTitle: 'So verwenden Sie dieses Plugin',
+      howtoLangLabel: 'Sprache der Anleitung',
+      howtoClose: 'Schließen',
       progressTitle: 'PNG-Bilder werden gespeichert',
       progressPreparing: 'Vorbereitung...',
       progressCapturing: 'Seiteninhalt erfassen {done}/{total}...',
@@ -468,6 +876,68 @@
       popupStartFail: 'Screenshot kann nicht gestartet werden: {msg}',
       popupClearFail: 'Hilfslinien können nicht gelöscht werden: {msg}',
       popupToggleFail: 'Lineal kann nicht umgeschaltet werden: {msg}',
+      // Anleitungsinhalt (pro Sprache direkt vom Modell bereitgestellt, keine Übersetzungsskripte)
+      guide: [
+        {
+          title: 'Überblick über das Plugin',
+          steps: [
+            'Dies ist eine Browsererweiterung für Abschnitt-Screenshots von Webseiten.',
+            'Sie können auf der Seite frei Hilfslinien herausziehen, um sie in mehrere Bereiche zu teilen.',
+            'Jeder Bereich wird separat als hochauflösendes PNG-Bild gespeichert.',
+          ],
+        },
+        {
+          title: 'Hilfslinien mit dem Lineal hinzufügen',
+          steps: [
+            'Nach dem Öffnen einer Seite erscheinen Photoshop-ähnliche Lineale oben und links.',
+            'Halten Sie die linke Maustaste gedrückt und ziehen Sie vom oberen Lineal nach unten, um eine horizontale Hilfslinie hinzuzufügen.',
+            'Halten Sie die linke Maustaste gedrückt und ziehen Sie vom linken Lineal nach rechts, um eine vertikale Hilfslinie hinzuzufügen.',
+            'Klicken Sie auf eine Hilfslinie, um die Schaltfläche "Löschen" anzuzeigen und sie zu entfernen.',
+          ],
+        },
+        {
+          title: 'Das Auswahlfeld verwenden',
+          steps: [
+            'Klicken Sie in der Symbolleiste auf "Auswahl aktivieren" (oder nutzen Sie das Kürzel, Standard P).',
+            'Drücken und ziehen Sie die Maus auf der Seite, um eine freie Auswahl zu zeichnen.',
+            'Das Auswahlfeld eignet sich für unregelmäßige rechteckige Bereiche.',
+            'Drücken Sie ESC, um den Auswahlmodus zu beenden.',
+          ],
+        },
+        {
+          title: 'Auto-Auswahl (nach Class)',
+          steps: [
+            'Klicken Sie in der Symbolleiste auf "Auto-Auswahl".',
+            'Geben Sie einen CSS-Class-Namen der Elemente ein (z. B. card-item).',
+            'Für alle Elemente, die dieser Class entsprechen, werden automatisch Auswahlen erstellt.',
+          ],
+        },
+        {
+          title: 'Zuschnitt starten und PNG speichern',
+          steps: [
+            'Klicken Sie nach dem Teilen der Bereiche oben in der Symbolleiste auf "PNG-Zuschnitt starten".',
+            'Die Erweiterung erfasst jeden Bereich einzeln und speichert sie als PNG-Bilder.',
+            'Die Bilder werden automatisch nach dem Muster "Index_Seitenname.png" benannt.',
+            'Klicken Sie nach dem Speichern auf "Gespeicherten Ordner öffnen", um die Ergebnisse zu sehen.',
+          ],
+        },
+        {
+          title: 'Einstellungen und Kürzel',
+          steps: [
+            'Klicken Sie in der Symbolleiste auf "Einstellungen", um das Auswahl-Kürzel zu ändern.',
+            'In der Dropdown-Liste "Oberflächensprache" können Sie jederzeit die Sprache der Benutzeroberfläche wechseln.',
+            'Klicken Sie jederzeit auf "So wird\'s benutzt", um diese Anleitung anzuzeigen.',
+          ],
+        },
+        {
+          title: 'Tipps',
+          steps: [
+            'Sie können Hilfslinien und Auswahlfelder kombinieren, um komplexe Bereiche flexibel zu teilen.',
+            'Während des Screenshots wird die Plugin-Überlagerung automatisch ausgeblendet, sodass sie nicht stört.',
+            'Wenn eine Class keine sichtbaren Elemente hat, zeigt das Plugin einen Hinweis.',
+          ],
+        },
+      ],
     },
     ru: {
       toolbarStart: 'Начать обрезку PNG',
@@ -480,6 +950,7 @@
       toolbarSettings: 'Настройки',
       toolbarCoffee: 'Угостить автора кофе',
       guideCount: 'Направляющих: {count}',
+      rulerDragHint: 'Удерживайте левую кнопку мыши и перетащите, чтобы создать направляющую',
       settingsTitle: 'Настройки плагина',
       settingsShortcutLabel: 'Горячая клавиша выделения',
       settingsShortcutTip: 'Нажмите на поле выше и нажмите клавишу, чтобы изменить',
@@ -487,6 +958,10 @@
       settingsLanguageTip: 'Применяется сразу после переключения',
       settingsSave: 'Сохранить настройки',
       settingsClose: 'Закрыть',
+      settingsHowTo: 'Как использовать',
+      howtoTitle: 'Как использовать этот плагин',
+      howtoLangLabel: 'Язык справки',
+      howtoClose: 'Закрыть',
       progressTitle: 'Сохранение PNG-изображений',
       progressPreparing: 'Подготовка...',
       progressCapturing: 'Захват контента {done}/{total}...',
@@ -530,6 +1005,68 @@
       popupStartFail: 'Не удалось запустить снимок: {msg}',
       popupClearFail: 'Не удалось очистить направляющие: {msg}',
       popupToggleFail: 'Не удалось переключить линейку: {msg}',
+      // Содержание справки (предоставлено моделью для каждого языка напрямую, без скриптов перевода)
+      guide: [
+        {
+          title: 'Обзор плагина',
+          steps: [
+            'Это браузерное расширение для снимков отдельных секций веб-страниц.',
+            'Вы можете свободно вытягивать направляющие на странице, чтобы разделить её на несколько областей.',
+            'Каждая область сохраняется отдельно как PNG-изображение высокого разрешения.',
+          ],
+        },
+        {
+          title: 'Добавление направляющих линейкой',
+          steps: [
+            'После открытия страницы сверху и слева появляются линейки в стиле Photoshop.',
+            'Удерживайте левую кнопку мыши и перетащите вниз от верхней линейки, чтобы добавить горизонтальную направляющую.',
+            'Удерживайте левую кнопку мыши и перетащите вправо от левой линейки, чтобы добавить вертикальную направляющую.',
+            'Нажмите на направляющую, чтобы показать кнопку «Удалить» и убрать её.',
+          ],
+        },
+        {
+          title: 'Использование выделения',
+          steps: [
+            'Нажмите кнопку «Включить выделение» на панели инструментов (или используйте клавишу, по умолчанию P).',
+            'Нажмите и перетащите мышь по странице, чтобы нарисовать свободное выделение.',
+            'Рамка выделения подходит для захвата неправильных прямоугольных областей.',
+            'Нажмите ESC, чтобы выйти из режима выделения.',
+          ],
+        },
+        {
+          title: 'Автовыделение (по Class)',
+          steps: [
+            'Нажмите кнопку «Автовыделение» на панели инструментов.',
+            'Введите CSS-имя Class элементов (например, card-item).',
+            'Для всех элементов, соответствующих этому Class, автоматически создаются выделения.',
+          ],
+        },
+        {
+          title: 'Запуск обрезки и сохранение PNG',
+          steps: [
+            'После разделения областей нажмите кнопку «Начать обрезку PNG» в верхней части панели.',
+            'Расширение захватывает каждую область по очереди и сохраняет их как PNG-изображения.',
+            'Изображения автоматически именуются по шаблону «индекс_имя-страницы.png».',
+            'После сохранения нажмите «Открыть папку сохранения», чтобы увидеть результаты.',
+          ],
+        },
+        {
+          title: 'Настройки и горячие клавиши',
+          steps: [
+            'Нажмите кнопку «Настройки» на панели, чтобы изменить клавишу выделения.',
+            'В раскрывающемся списке «Язык интерфейса» вы можете в любой момент сменить язык интерфейса.',
+            'Нажмите «Как использовать», чтобы в любой момент открыть эту справку.',
+          ],
+        },
+        {
+          title: 'Советы',
+          steps: [
+            'Направляющие и рамки выделения можно сочетать, чтобы гибко делить сложные области.',
+            'Во время снимка наложение плагина автоматически скрывается и не мешает.',
+            'Если у Class нет видимых элементов, плагин покажет подсказку.',
+          ],
+        },
+      ],
     },
   };
 
@@ -590,6 +1127,18 @@
         }
       }
       return str;
+    }
+
+    /**
+     * 获取指定语言的“如何使用”讲解内容（分步骤章节数组）。
+     * 该内容由大模型直接以各语言译文写入 MESSAGES，不依赖任何翻译脚本。
+     * 若目标语言不可用则回退到中文。
+     * @param {string} [lang] 语言代码，缺省时使用当前界面语言
+     * @returns {Array<{title:string, steps:string[]}>}
+     */
+    getGuide(lang = this._lang) {
+      const data = MESSAGES[lang]?.guide || MESSAGES.zh.guide || [];
+      return data;
     }
   }
 

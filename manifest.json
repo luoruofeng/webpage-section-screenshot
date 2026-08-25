@@ -30,6 +30,7 @@
         "content/modules/SettingsModal.js",
         "content/modules/CoffeeModal.js",
         "content/modules/ClassSelectionModal.js",
+        "content/modules/HowToUseModal.js",
         "content/modules/Ruler.js",
         "content/modules/GuideManager.js",
         "content/modules/SelectionManager.js",
@@ -41,7 +42,6 @@
     }
   ],
   "action": {
-    "default_popup": "popup/popup.html",
     "default_title": "网页分区截图插件",
     "default_icon": {
       "16": "assets/icons/icon16.png",

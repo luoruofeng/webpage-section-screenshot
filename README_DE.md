@@ -105,10 +105,6 @@ webpage-section-screenshot/
 │       ├── CoffeeModal.js       # Kaffee-kaufen (Spenden)-Dialog
 │       ├── ClassSelectionModal.js # Eingabe-Dialog für automatische Auswahl nach Klasse
 │       └── Toolbar.js           # Schwebende Symbolleiste in der Seite
-├── popup/
-│   ├── popup.html               # Erweiterungs-Popup
-│   ├── popup.css
-│   └── popup.js
 ├── lib/
 │   └── html-to-image.js         # Ergänzende Vollseiten-Erfassung (SVG foreignObject)
 ├── assets/
