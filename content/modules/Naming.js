@@ -53,14 +53,32 @@
     }
 
     /**
-     * 生成第 index 张 PNG 的文件名
+     * 生成保存文件夹名（按当前时间，年月日时分秒及毫秒的可读格式）
+     * 附加毫秒和随机字符以确保在同一秒内多次点击时文件路径不冲突，避免离屏文档缓冲区污染。
+     * @param {Date} [date] 时间（默认为当前时间）
+     * @returns {string} 例如 `2026年08月25日 14时30分55秒_500_A1B2`
+     */
+    static folderName(date = new Date()) {
+      const pad = (n) => String(n).padStart(2, '0');
+      const ms = String(date.getMilliseconds()).padStart(3, '0');
+      const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+      return (
+        `${date.getFullYear()}年${pad(date.getMonth() + 1)}月${pad(date.getDate())}日 ` +
+        `${pad(date.getHours())}时${pad(date.getMinutes())}分${pad(date.getSeconds())}秒_${ms}_${random}`
+      );
+    }
+
+    /**
+     * 生成第 index 张 PNG 的文件名（可附带同一保存文件夹前缀）
      * @param {number} index 序号（从 1 开始）
      * @param {string} url 页面 URL
-     * @returns {string} 例如 `1_mywebsite.png`
+     * @param {string} [folder] 保存文件夹名（同一批图片共用同一个）
+     * @returns {string} 例如 `1_mywebsite.png` 或 `2026年08月25日 14时30分55秒/1_mywebsite.png`
      */
-    static build(index, url) {
+    static build(index, url, folder) {
       const base = Naming.pageNameFromUrl(url);
-      return `${index}_${base}.png`;
+      const name = `${index}_${base}.png`;
+      return folder ? `${folder}/${name}` : name;
     }
   }
 

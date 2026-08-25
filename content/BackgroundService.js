@@ -34,12 +34,48 @@
 
     /**
      * 触发 PNG 下载
-     * @param {string} dataUrl
-     * @param {string} filename
+     *
+     * 为避免超大 data URL 通过 chrome.runtime.sendMessage 一次性传输时被截断或损坏
+     * （大尺寸 PNG 的 base64 字符串可达到数十 MB，单条消息传输不可靠），
+     * 这里将 dataUrl 按固定大小切成多个 chunk 分段发送，全部发送完成后通知后台组装并下载。
+     *
+     * @param {string} dataUrl PNG 的 data URL
+     * @param {string} filename 目标文件名（含 .png 后缀）
      * @returns {Promise<Object>}
      */
-    downloadPng(dataUrl, filename) {
-      return this._send({ type: SSS.MSG.DOWNLOAD_PNG, dataUrl, filename });
+    async downloadPng(dataUrl, filename) {
+      const CHUNK_SIZE = 4 * 1024 * 1024; // 单条消息最大携带的字符数（4MB）
+      // base64 每个字符都是单字节，可按字符边界安全切分
+      const chunks = [];
+      for (let i = 0; i < dataUrl.length; i += CHUNK_SIZE) {
+        chunks.push(dataUrl.slice(i, i + CHUNK_SIZE));
+      }
+
+      // 顺序逐块发送，保证到达顺序与拼接正确
+      for (let i = 0; i < chunks.length; i++) {
+        await this._send({
+          type: SSS.MSG.DOWNLOAD_CHUNK,
+          filename,
+          chunkCount: chunks.length,
+          index: i,
+          chunk: chunks[i],
+        });
+      }
+
+      // 全部发送完成后通知后台组装 Blob 并触发下载
+      return this._send({
+        type: SSS.MSG.DOWNLOAD_ASSEMBLE,
+        filename,
+        chunkCount: chunks.length,
+      });
+    }
+
+    /**
+     * 打开默认下载文件夹
+     * @returns {Promise<Object>}
+     */
+    openDownloadsFolder() {
+      return this._send({ type: SSS.MSG.OPEN_DOWNLOADS_FOLDER });
     }
   }
 

@@ -19,12 +19,20 @@
       // 创建 Shadow DOM 宿主（挂载在 documentElement 下，保证层级最高）
       this._initShadow();
 
+      // 初始化界面语言：先按浏览器语言设置默认值，
+      // 随后 settingsModal.load() 会用已保存的语言覆盖（若有）。
+      SSS.I18n.setLanguage(SSS.I18n.detectLanguage());
+
       this.background = new SSS.BackgroundService();
       this.storage = new SSS.Storage();
 
       this.ruler = new SSS.Ruler(this.shadow, SSS.RULER_SIZE);
       this.guides = new SSS.GuideManager(this.shadow, this.storage);
+      this.selections = new SSS.SelectionManager(this.shadow);
       this.progressModal = new SSS.ProgressModal(this.shadow);
+      this.settingsModal = new SSS.SettingsModal(this.shadow, this.storage);
+      this.coffeeModal = new SSS.CoffeeModal(this.shadow);
+      this.classSelectionModal = new SSS.ClassSelectionModal(this.shadow);
       this.screenshot = new SSS.ScreenshotManager(this.background, this.progressModal);
       this.toolbar = new SSS.Toolbar(this.shadow);
 
@@ -54,12 +62,19 @@
      */
     _wire() {
       // 标尺 -> 参考线：拖拽创建
-      this.ruler.onDragStart = (data) => this.guides.startDrag(data);
+      this.ruler.onDragStart = (data) => {
+        // 从标尺拖动参考线时，自动关闭选区状态
+        if (this.selections.active) {
+          this.selections.setActive(false);
+          this.toolbar.updateSelectionState(false);
+        }
+        this.guides.startDrag(data);
+      };
       this.ruler.onDragMove = (x, y) => this.guides.moveDrag(x, y);
       this.ruler.onDragEnd = (x, y) => this.guides.endDrag(x, y);
 
       // 标尺拖拽的 move/end 需要全局监听
-      this._bindRulerDragGlobal();
+      this._bindGlobalEvents();
 
       // 参考线变化 -> 工具条统计
       this.guides.onChange = (list) => this.toolbar.setGuideCount(list.length);
@@ -69,10 +84,44 @@
 
       // 工具条按钮
       this.toolbar.onStart = () => this._handleStart();
-      this.toolbar.onClear = () => this.guides.clearAll();
+      this.toolbar.onClear = () => {
+        this.guides.clearAll();
+        this.selections.clearAll();
+      };
       this.toolbar.onToggleRuler = () => {
         this.ruler.setVisible(!this.ruler.visible);
         this.toolbar.updateToggleLabel?.(this.ruler.visible);
+      };
+      this.toolbar.onToggleSelection = (active) => {
+        this.selections.setActive(active);
+      };
+      this.toolbar.onOpenSettings = () => {
+        this.settingsModal.show();
+      };
+      this.toolbar.onOpenCoffee = () => {
+        this.coffeeModal.show();
+      };
+      this.toolbar.onAutoSelection = () => {
+        this.classSelectionModal.show();
+      };
+
+      this.classSelectionModal.onConfirm = (className) => {
+        const count = this.selections.addSelectionByClass(className);
+        if (count > 0) {
+          this._notify(SSS.I18n.t('notifyClassAdded', { className, count }), 'info');
+        } else {
+          this._notify(SSS.I18n.t('notifyClassNotFound', { className }));
+        }
+      };
+
+      this.settingsModal.onShortcutChange = (newShortcut) => {
+        this.toolbar.updateShortcut(newShortcut);
+      };
+
+      // 界面语言变化：刷新所有模块的文案
+      SSS.I18n.onLanguageChange = () => {
+        this.toolbar.refreshTexts();
+        this.selections.refreshTexts();
       };
 
       // 截图回调：错误信息已由 ScreenshotManager 在模态框内 showError 展示，
@@ -84,34 +133,96 @@
       // Popup 消息监听
       this._listenMessages();
 
-      // 初始化加载持久化的参考线
+      // 初始化加载持久化的参考线与设置
       this.guides.load().then(() => {
         this.toolbar.setGuideCount(this.guides.count);
+      });
+      this.settingsModal.load().then((settings) => {
+        this.toolbar.updateShortcut(settings.selectionShortcut);
       });
     }
 
     /**
-     * 全局监听标尺拖拽的 move / end
+     * 全局监听标尺拖拽与选区框拖拽
      */
-    _bindRulerDragGlobal() {
-      this._onDragMove = (e) => {
+    _bindGlobalEvents() {
+      this._onPointerDown = (e) => {
+        if (!this.selections.active) return;
+        // 仅响应左键
+        if (e.button !== 0) return;
+        
+        const scrollX = window.scrollX || document.documentElement.scrollLeft;
+        const scrollY = window.scrollY || document.documentElement.scrollTop;
+        this.selections.startDrag(e.clientX, e.clientY, scrollX, scrollY);
+      };
+
+      this._onPointerMove = (e) => {
+        // 标尺拖拽
         this.ruler.onDragMove?.(e.clientX, e.clientY);
+        
+        // 选区框逻辑
+        if (this.selections.active) {
+          const scrollX = window.scrollX || document.documentElement.scrollLeft;
+          const scrollY = window.scrollY || document.documentElement.scrollTop;
+          
+          // 如果正在拖拽选区，更新预览框
+          this.selections.moveDrag(e.clientX, e.clientY, scrollX, scrollY);
+          
+          // 始终更新鼠标提示位置
+          this.selections.updateCursor(e.clientX, e.clientY, scrollX, scrollY);
+        }
       };
-      this._onDragEnd = (e) => {
+
+      this._onPointerUp = (e) => {
+        // 标尺拖拽结束
         this.ruler.onDragEnd?.(e.clientX, e.clientY);
+        
+        // 选区框拖拽结束
+        if (this.selections.active) {
+          const scrollX = window.scrollX || document.documentElement.scrollLeft;
+          const scrollY = window.scrollY || document.documentElement.scrollTop;
+          this.selections.endDrag(e.clientX, e.clientY, scrollX, scrollY);
+        }
       };
-      window.addEventListener('pointermove', this._onDragMove);
-      window.addEventListener('pointerup', this._onDragEnd);
+
+      window.addEventListener('pointerdown', this._onPointerDown);
+      window.addEventListener('pointermove', this._onPointerMove);
+      window.addEventListener('pointerup', this._onPointerUp);
+
+      // 全局快捷键监听
+      window.addEventListener('keydown', (e) => {
+        // 如果正在输入（例如在设置框内），则不触发快捷键
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable || e.target.classList.contains('sss-shortcut-input')) {
+          return;
+        }
+
+        const shortcut = this.settingsModal.selectionShortcut.toLowerCase();
+        if (e.key.toLowerCase() === shortcut) {
+          e.preventDefault();
+          const nextActive = !this.selections.active;
+          this.selections.setActive(nextActive);
+          this.toolbar.updateSelectionState(nextActive);
+        }
+
+        // 按 ESC 关闭选区状态
+        if (e.key === 'Escape') {
+          if (this.selections.active) {
+            this.selections.setActive(false);
+            this.toolbar.updateSelectionState(false);
+          }
+        }
+      });
     }
 
     /**
-     * 控制“截图干扰元素”的可见性（标尺/参考线/工具条），保留进度模态框可见
+     * 控制“截图干扰元素”的可见性（标尺/参考线/工具条/选区框），保留进度模态框可见
      * @param {boolean} visible
      */
     _setUiVisible(visible) {
       // 标尺用 setDomVisible 避免影响用户手动开关的标志位
       this.ruler?.setDomVisible(visible);
       this.guides?.setVisible(visible);
+      this.selections?.setVisible(visible);
       this.toolbar?.setVisible(visible);
     }
 
@@ -121,15 +232,19 @@
     async _handleStart() {
       try {
         const guides = this.guides.getGuides();
-        const cells = this.screenshot.computeCells(guides);
+        const selections = this.selections.getSelections();
+        
+        // 合并计算 cells。这里需要修改 ScreenshotManager.computeCells 以支持 selections
+        const cells = this.screenshot.computeCells(guides, selections);
+        
         if (cells.length === 0) {
-          this._notify('请至少设置两条参考线以划分截图区域（需要形成区块）。');
+          this._notify(SSS.I18n.t('notifyNoRegion'));
           return;
         }
-        // 截图前隐藏插件覆盖层（标尺/参考线/工具条），避免出现在截图画面中
+        // 截图前隐藏插件覆盖层
         this._setUiVisible(false);
         try {
-          await this.screenshot.start(guides, location.href);
+          await this.screenshot.start(guides, location.href, selections);
         } finally {
           // 恢复覆盖层
           this._setUiVisible(true);
@@ -178,18 +293,26 @@
 
     /**
      * 页面内通知提示（错误或提示信息）
+     * @param {string} msg 
+     * @param {'error'|'info'} type
      */
-    _notify(msg) {
-      console.error('[SSS]', msg);
+    _notify(msg, type = 'error') {
+      console.log(`[SSS] [${type}]`, msg);
+      const isError = type === 'error';
       const tip = document.createElement('div');
       tip.style.cssText =
-        'position:fixed;top:60px;right:16px;z-index:2147484600;background:#7f1d1d;color:#fff;' +
-        'padding:12px 16px;border-radius:8px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.3);' +
-        'max-width:340px;word-break:break-all;font-family:-apple-system,sans-serif;' +
-        'border:1px solid #ef4444;';
-      tip.textContent = '⚠ ' + msg;
+        `position:fixed;top:60px;right:16px;z-index:2147484600;` +
+        `background:${isError ? '#7f1d1d' : 'rgba(37, 99, 235, 0.9)'};` +
+        `color:#fff;padding:12px 16px;border-radius:8px;font-size:13px;` +
+        `box-shadow:0 4px 16px rgba(0,0,0,.3);max-width:340px;word-break:break-all;` +
+        `font-family:-apple-system,sans-serif;border:1px solid ${isError ? '#ef4444' : '#60a5fa'};` +
+        `backdrop-filter: blur(8px); transition: opacity 0.3s ease;`;
+      tip.textContent = (isError ? '⚠ ' : 'ℹ ') + msg;
       this.shadow.appendChild(tip);
-      setTimeout(() => tip.remove(), 6000);
+      setTimeout(() => {
+        tip.style.opacity = '0';
+        setTimeout(() => tip.remove(), 300);
+      }, 4000);
     }
   }
 

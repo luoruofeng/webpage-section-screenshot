@@ -148,6 +148,31 @@
   background: #e5e7eb;
 }
 
+.sss-btn-active {
+  background: var(--sss-accent) !important;
+  color: #fff !important;
+  border-color: var(--sss-accent-hover) !important;
+}
+
+.sss-btn-coffee {
+  background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+  color: #fff;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(255, 154, 158, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.sss-btn-coffee:hover {
+  background: linear-gradient(135deg, #ff8a8e 0%, #fbc0b4 100%);
+  box-shadow: 0 6px 20px rgba(255, 154, 158, 0.5);
+  transform: translateY(-2px);
+}
+
+.sss-btn-coffee svg {
+  stroke: #fff;
+}
+
 .sss-btn-danger {
   background: var(--sss-danger);
   color: #fff;
@@ -235,6 +260,7 @@
 .sss-modal-actions {
   display: flex;
   justify-content: center;
+  gap: 12px;
   margin-top: 20px;
 }
 
@@ -247,4 +273,251 @@
 
 .sss-modal-done .sss-modal-progress-fill {
   background: linear-gradient(90deg, #22c55e, #4ade80);
+}
+
+/* ---------- 设置模态框 ---------- */
+.sss-settings-content {
+  margin: 16px 0;
+}
+
+.sss-setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--sss-border);
+}
+
+.sss-setting-item:last-child {
+  border-bottom: none;
+}
+
+.sss-setting-label {
+  font-size: 14px;
+  color: var(--sss-text);
+  font-weight: 500;
+}
+
+.sss-setting-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.sss-shortcut-input {
+  min-width: 48px;
+  height: 32px;
+  background: #f3f4f6;
+  border: 1px solid var(--sss-border);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--sss-font);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--sss-accent);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.sss-shortcut-input:focus {
+  border-color: var(--sss-accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  background: #fff;
+}
+
+.sss-shortcut-changed {
+  animation: sss-pulse 0.5s ease;
+}
+
+.sss-setting-tip {
+  font-size: 11px;
+  color: var(--sss-text-sub);
+}
+
+.sss-language-select {
+  min-width: 150px;
+  height: 32px;
+  padding: 0 8px;
+  background: #f3f4f6;
+  border: 1px solid var(--sss-border);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--sss-text);
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sss-language-select:focus {
+  border-color: var(--sss-accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  background: #fff;
+}
+
+/* ---------- 自动选区模态框扩展 ---------- */
+.sss-modal-content {
+  margin: 20px 0;
+}
+
+.sss-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sss-input-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--sss-text);
+}
+
+.sss-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #f9fafb;
+  border: 2px solid var(--sss-border);
+  border-radius: 10px;
+  padding: 0 12px;
+  transition: all 0.2s ease;
+}
+
+.sss-input-wrapper:focus-within {
+  border-color: var(--sss-accent);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.sss-input-prefix {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--sss-accent);
+  margin-right: 4px;
+  user-select: none;
+}
+
+.sss-class-input {
+  flex: 1;
+  height: 44px;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 16px;
+  font-family: var(--sss-font);
+  color: var(--sss-text);
+}
+
+.sss-input-tip {
+  font-size: 12px;
+  color: var(--sss-text-sub);
+  line-height: 1.5;
+}
+
+/* ---------- 霓虹/玻璃拟态效果扩展 ---------- */
+.sss-modal-overlay {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px) saturate(180%);
+  animation: sss-fade-in 0.3s ease;
+}
+
+.sss-modal-fade-out {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sss-modal {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2), 0 0 30px rgba(37, 99, 235, 0.1);
+  animation: sss-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 请喝咖啡模态框定制 */
+.sss-coffee-modal {
+  width: 360px;
+  text-align: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.sss-coffee-header {
+  margin-bottom: 24px;
+}
+
+.sss-coffee-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  animation: sss-bounce 2s infinite;
+}
+
+.sss-coffee-subtitle {
+  font-size: 13px;
+  color: var(--sss-text-sub);
+  margin-top: 4px;
+}
+
+.sss-qr-container {
+  position: relative;
+  display: inline-block;
+  padding: 12px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+  margin: 10px 0;
+}
+
+.sss-qr-code {
+  width: 220px;
+  height: 220px;
+  display: block;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.sss-qr-decoration {
+  position: absolute;
+  inset: -5px;
+  border: 2px dashed #fad0c4;
+  border-radius: 24px;
+  z-index: -1;
+  opacity: 0.5;
+}
+
+.sss-coffee-footer {
+  margin-top: 24px;
+  font-size: 11px;
+  color: #cbd5e1;
+  letter-spacing: 0.5px;
+}
+
+.sss-toolbar {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@keyframes sss-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sss-slide-up {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes sss-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes sss-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }

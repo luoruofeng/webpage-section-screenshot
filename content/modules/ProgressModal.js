@@ -35,6 +35,7 @@
       // 移除旧的
       this.hide();
 
+      const i18n = SSS.I18n;
       const overlay = document.createElement('div');
       overlay.className = 'sss-modal-overlay';
 
@@ -44,17 +45,17 @@
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 3h18M3 3v18"/><rect x="7" y="7" width="14" height="14" rx="2"/>
             </svg>
-            正在保存 PNG 图片
+            ${i18n.t('progressTitle')}
           </div>
           <div class="sss-modal-progress-track">
             <div class="sss-modal-progress-fill"></div>
           </div>
           <div class="sss-modal-progress-text">0 / ${this._total}</div>
-          <div class="sss-modal-status">正在准备...</div>
+          <div class="sss-modal-status">${i18n.t('progressPreparing')}</div>
           <div class="sss-modal-actions">
-            <button class="sss-btn sss-btn-secondary sss-cancel-btn">取消保存</button>
+            <button class="sss-btn sss-btn-secondary sss-cancel-btn">${i18n.t('progressCancel')}</button>
           </div>
-          <div class="sss-modal-footer">图片命名：序号_网页名称.png</div>
+          <div class="sss-modal-footer">${i18n.t('progressFooter')}</div>
         </div>
       `;
 
@@ -99,10 +100,30 @@
     }
 
     /**
-     * 标记完成（绿色进度条）
+     * 标记完成（绿色进度条），并替换取消按钮为“打开文件夹”按钮
+     * @param {Function} onOpenFolder 点击打开文件夹的回调
      */
-    done() {
-      if (this._el) this._el.querySelector('.sss-modal').classList.add('sss-modal-done');
+    done(onOpenFolder) {
+      if (!this._el) return;
+      const modalEl = this._el.querySelector('.sss-modal');
+      modalEl.classList.add('sss-modal-done');
+
+      // 替换取消按钮为“打开文件夹”按钮
+      const actionsEl = this._el.querySelector('.sss-modal-actions');
+      if (actionsEl) {
+        actionsEl.innerHTML = `
+          <button class="sss-btn sss-btn-primary sss-open-folder-btn">${SSS.I18n.t('progressOpenFolder')}</button>
+          <button class="sss-btn sss-btn-secondary sss-close-btn">${SSS.I18n.t('progressClose')}</button>
+        `;
+        actionsEl
+          .querySelector('.sss-open-folder-btn')
+          .addEventListener('click', () => {
+            onOpenFolder?.();
+          });
+        actionsEl.querySelector('.sss-close-btn').addEventListener('click', () => {
+          this.hide();
+        });
+      }
     }
 
     /**
@@ -119,15 +140,26 @@
       }
       // 隐藏取消按钮，仅保留关闭能力（点击遮罩关闭）
       const cancelBtn = this._el.querySelector('.sss-cancel-btn');
-      if (cancelBtn) cancelBtn.textContent = '关闭';
+      if (cancelBtn) cancelBtn.textContent = SSS.I18n.t('progressClose');
     }
 
     /**
-     * 隐藏模态框
+     * 隐藏模态框（销毁 DOM）
      */
     hide() {
       this._el?.remove();
       this._el = null;
+    }
+
+    /**
+     * 控制模态框 DOM 的显示 / 隐藏（保留内部状态）
+     *
+     * 用途：在“滚动拼接整页截图”阶段，模态框必须从页面上隐藏，
+     * 否则会被 captureVisibleTab 截取进最终 PNG。拼接完成后重新显示。
+     * @param {boolean} visible
+     */
+    setVisible(visible) {
+      if (this._el) this._el.style.display = visible ? '' : 'none';
     }
   }
 

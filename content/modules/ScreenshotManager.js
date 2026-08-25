@@ -27,6 +27,7 @@
       this.background = background;
       this.progressModal = progressModal;
       this._cancelled = false;
+      this._lastCaptureAt = 0; // 上次 captureVisibleTab 调用时间（用于频率控制）
       this.onFinish = null; // 全部完成回调
       this.onError = null; // 出错回调
     }
@@ -57,11 +58,12 @@
     }
 
     /**
-     * 根据参考线计算分区块（cells）
+     * 根据参考线和选区框计算分区块（cells）
      * @param {Array<{vertical:boolean, pos:number}>} guides 参考线数组
+     * @param {Array<{x:number, y:number, w:number, h:number}>} selections 选区框数组
      * @returns {Array<{x:number,y:number,w:number,h:number}>} 区块列表（文档坐标，相对文档左上角）
      */
-    computeCells(guides) {
+    computeCells(guides, selections = []) {
       const verticalPos = guides
         .filter((g) => g.vertical)
         .map((g) => g.pos)
@@ -73,118 +75,150 @@
 
       const { width: docWidth, height: docHeight } = this.getDocumentSize();
 
-      // 边界数组：参考线 + 文档边界（去重）
+      // 1. 处理参考线网格
       const uniq = (arr) => arr.filter((p, i) => arr.indexOf(p) === i);
       const xBoundaries = uniq([0, ...verticalPos, docWidth]);
       const yBoundaries = uniq([0, ...horizontalPos, docHeight]);
 
       const cells = [];
-      for (let i = 0; i < xBoundaries.length - 1; i++) {
-        for (let j = 0; j < yBoundaries.length - 1; j++) {
-          const x = xBoundaries[i];
-          const y = yBoundaries[j];
-          const w = xBoundaries[i + 1] - x;
-          const h = yBoundaries[j + 1] - y;
-          // 忽略过小区块
-          if (w < SSS.MIN_CELL_SIZE || h < SSS.MIN_CELL_SIZE) continue;
-          cells.push({ x, y, w, h });
+      // 只有在至少有一条横向和一条纵向参考线时，才生成网格区块
+      // 或者按照原逻辑，如果没有参考线，xBoundaries=[0, docWidth], yBoundaries=[0, docHeight]，会生成一个整页区块
+      // 但原逻辑 computeCells(guides) 在 index.js 中如果 cells 为空会报错
+      // 这里保持逻辑：如果有参考线，按参考线切分；如果没有参考线，则不生成网格区块（除非 selections 也没有）
+      
+      const hasGuides = guides.length > 0;
+      if (hasGuides) {
+        for (let i = 0; i < xBoundaries.length - 1; i++) {
+          for (let j = 0; j < yBoundaries.length - 1; j++) {
+            const x = xBoundaries[i];
+            const y = yBoundaries[j];
+            const w = xBoundaries[i + 1] - x;
+            const h = yBoundaries[j + 1] - y;
+            // 忽略过小区块
+            if (w < SSS.MIN_CELL_SIZE || h < SSS.MIN_CELL_SIZE) continue;
+            cells.push({ x, y, w, h });
+          }
         }
       }
+
+      // 2. 添加选区框区块
+      for (const sel of selections) {
+        if (sel.w >= SSS.MIN_CELL_SIZE && sel.h >= SSS.MIN_CELL_SIZE) {
+          cells.push({ x: sel.x, y: sel.y, w: sel.w, h: sel.h });
+        }
+      }
+
       return cells;
     }
 
     /* ==================== 整页拼接截图 ==================== */
 
     /**
-     * 滚动拼接整个页面，返回一张完整的整页 canvas
+     * 滚动页面并捕获所有区块。
+     * 核心改进：不再创建一张巨大的整页 canvas（避免超过浏览器 32k 像素限制导致空白），
+     * 而是为每个要保存的区块创建独立的 canvas，在滚动过程中将视口交集部分直接绘制到各区块 canvas 中。
+     *
+     * @param {Array<{x:number,y:number,w:number,h:number}>} cells 区块列表
      * @param {number} dpr 设备像素比
-     * @returns {Promise<HTMLCanvasElement>} 整页 canvas
+     * @param {number} scale 导出放大倍率
+     * @returns {Promise<Array<HTMLCanvasElement>>} 与 cells 一一对应的 canvas 数组
      */
-    async _captureFullPage(dpr) {
+    async _captureCells(cells, dpr, scale) {
       const { width: docWidth, height: docHeight } = this.getDocumentSize();
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
+      // 使用 clientWidth/Height 替代 innerWidth/Height，以排除滚动条占据的空间
+      const vw = document.documentElement.clientWidth;
+      const vh = document.documentElement.clientHeight;
+      const s = dpr * scale;
+      const renderScale = scale; // 相对截图源像素（dpr）的放大倍数
 
-      // 整页 canvas（按 dpr 缩放）
-      const fullCanvas = document.createElement('canvas');
-      fullCanvas.width = Math.ceil(docWidth * dpr);
-      fullCanvas.height = Math.ceil(docHeight * dpr);
-      const fullCtx = fullCanvas.getContext('2d');
+      // 1. 为每个 cell 初始化独立的 canvas
+      const cellCanvases = cells.map((cell) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(cell.w * s));
+        canvas.height = Math.max(1, Math.round(cell.h * s));
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        // 初始填充透明（PNG 默认），也可根据需要填充背景色
+        return canvas;
+      });
 
-      // 横向 / 纵向分块数量
+      // 2. 计算需要滚动的网格
       const cols = Math.ceil(docWidth / vw);
       const rows = Math.ceil(docHeight / vh);
       const totalTiles = cols * rows;
       let capturedTiles = 0;
 
-      // 逐格滚动并截取拼接
+      // 3. 逐格滚动并捕获
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
-          if (this._cancelled) return fullCanvas;
+          if (this._cancelled) return cellCanvases;
 
           const tileX = col * vw;
           const tileY = row * vh;
           this._scrollTo(tileX, tileY);
 
-          // 等待滚动与渲染稳定
-          await this._wait(80);
+          // 等待渲染稳定
+          await this._waitForPaint();
+          await this._wait(250); // 增加等待时间，从 150ms 提高到 250ms，确保复杂页面重绘完成
 
-          const { dataUrl } = await this.background.captureVisibleTab();
+          const dataUrl = await this._captureVisibleTabThrottled();
           const img = await this._loadImage(dataUrl);
 
-          // 当前滚动位置（以实际为准，防止滚动不到边界）
+          // 当前实际滚动位置
           const curScrollX = window.scrollX || document.documentElement.scrollLeft;
           const curScrollY = window.scrollY || document.documentElement.scrollTop;
 
-          // 格子（tile）应覆盖的文档区域，裁剪到文档边界内
-          const tileW = Math.min(vw, docWidth - tileX);
-          const tileH = Math.min(vh, docHeight - tileY);
-          if (tileW <= 0 || tileH <= 0) continue;
+          // 视口在文档中的实际像素范围（以 dpr 计）
+          // captureVisibleTab 返回的 img 分辨率通常是 (vw * dpr, vh * dpr)
+          const viewW = img.width;
+          const viewH = img.height;
 
-          // 格子左上角在视口截图中的像素坐标（允许为负，表示格子起始在视口外）
-          const srcX = (tileX - curScrollX) * dpr;
-          const srcY = (tileY - curScrollY) * dpr;
-          const sW = tileW * dpr;
-          const sH = tileH * dpr;
+          // 4. 将当前视口图像分发到所有相关的 cell canvas 中
+          for (let i = 0; i < cells.length; i++) {
+            const cell = cells[i];
+            const canvas = cellCanvases[i];
+            const ctx = canvas.getContext('2d');
 
-          // 计算格子与视口的交集，只绘制交集部分，避免越界
-          const clipLeft = Math.max(srcX, 0);
-          const clipTop = Math.max(srcY, 0);
-          const clipRight = Math.min(srcX + sW, img.width);
-          const clipBottom = Math.min(srcY + sH, img.height);
+            // 计算 cell 与当前视口的交集（文档坐标系，CSS 像素）
+            const intersectX = Math.max(cell.x, curScrollX);
+            const intersectY = Math.max(cell.y, curScrollY);
+            const intersectRight = Math.min(cell.x + cell.w, curScrollX + vw);
+            const intersectBottom = Math.min(cell.y + cell.h, curScrollY + vh);
 
-          if (clipLeft < clipRight && clipTop < clipBottom) {
-            // 交集在整页 canvas 中的目标位置 = 文档坐标 + 相对格子起点的偏移
-            const dstX = tileX * dpr + (clipLeft - srcX);
-            const dstY = tileY * dpr + (clipTop - srcY);
-            const dstW = clipRight - clipLeft;
-            const dstH = clipBottom - clipTop;
-            fullCtx.drawImage(
-              img,
-              clipLeft,
-              clipTop,
-              dstW,
-              dstH,
-              dstX,
-              dstY,
-              dstW,
-              dstH
-            );
+            const intersectW = intersectRight - intersectX;
+            const intersectH = intersectBottom - intersectY;
+
+            if (intersectW > 0 && intersectH > 0) {
+              // 交集部分在视口截图中对应的源坐标（像素）
+              // 使用 Math.round 对坐标和尺寸取整，消除亚像素偏移导致的接缝
+              const sx = Math.round((intersectX - curScrollX) * dpr);
+              const sy = Math.round((intersectY - curScrollY) * dpr);
+              const sw = Math.round(intersectW * dpr);
+              const sh = Math.round(intersectH * dpr);
+
+              // 交集部分在目标 cell canvas 中对应的位置（像素，需乘 s）
+              const dx = Math.round((intersectX - cell.x) * s);
+              const dy = Math.round((intersectY - cell.y) * s);
+              const dw = Math.round(intersectW * s);
+              const dh = Math.round(intersectH * s);
+
+              ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+            }
           }
 
           capturedTiles++;
-          // 更新拼接进度
           this.progressModal.update(
             Math.round((capturedTiles / totalTiles) * 100),
             100
           );
           this.progressModal.setStatus(
-            `正在截取整页 ${capturedTiles}/${totalTiles}...`
+            SSS.I18n.t('progressCapturing', { done: capturedTiles, total: totalTiles })
           );
         }
       }
 
-      return fullCanvas;
+      return cellCanvases;
     }
 
     /* ==================== 启动保存流程 ==================== */
@@ -193,47 +227,52 @@
      * 启动整页截图与分区保存流程
      * @param {Array<{vertical:boolean,pos:number}>} guides 参考线
      * @param {string} url 页面 URL（用于命名）
+     * @param {Array<{x:number, y:number, w:number, h:number}>} selections 选区框
      * @returns {Promise<number>} 成功保存数量
      */
-    async start(guides, url = location.href) {
-      const cells = this.computeCells(guides);
+    async start(guides, url = location.href, selections = []) {
+      const cells = this.computeCells(guides, selections);
       if (cells.length === 0) {
-        throw new Error('请先拖拽标尺设置至少一组参考线，以划分截图区域。');
+        throw new Error(SSS.I18n.t('progressStartErr'));
       }
 
       this._cancelled = false;
       this.progressModal.show(cells.length);
 
-      // 记录初始滚动位置，完成后恢复
+      const folder = SSS.Naming.folderName();
       const initScrollX = window.scrollX || document.documentElement.scrollLeft;
       const initScrollY = window.scrollY || document.documentElement.scrollTop;
 
       try {
         const dpr = window.devicePixelRatio || 1;
+        const scale = SSS.EXPORT_SCALE;
 
-        // 阶段一：滚动拼接整页
-        this.progressModal.setStatus('正在拼接整页截图...');
-        const fullCanvas = await this._captureFullPage(dpr);
+        // 阶段一：滚动捕获所有区块内容
+        this.progressModal.setVisible(false);
+        this.progressModal.setStatus(SSS.I18n.t('progressPreparing'));
+        const cellCanvases = await this._captureCells(cells, dpr, scale);
+        this.progressModal.setVisible(true);
+
         if (this._cancelled) {
-          this.progressModal.setStatus('已取消保存。');
+          this.progressModal.setStatus(SSS.I18n.t('progressCancelled'));
           return 0;
         }
 
-        // 阶段二：按参考线裁剪每个区块
+        // 阶段二：将生成的各区块 canvas 保存为 PNG
         let saved = 0;
-        for (let i = 0; i < cells.length; i++) {
-          if (this._cancelled) {
-            this.progressModal.setStatus('已取消保存。');
-            break;
-          }
-          const cell = cells[i];
+        for (let i = 0; i < cellCanvases.length; i++) {
+          if (this._cancelled) break;
+
+          const canvas = cellCanvases[i];
           const index = i + 1;
 
           this.progressModal.update(i, cells.length);
-          this.progressModal.setStatus(`正在保存第 ${index}/${cells.length} 张...`);
+          this.progressModal.setStatus(
+            SSS.I18n.t('progressExporting', { index, total: cells.length })
+          );
 
-          const dataUrl = this._cropCell(fullCanvas, cell, dpr);
-          const filename = SSS.Naming.build(index, url);
+          const dataUrl = canvas.toDataURL('image/png');
+          const filename = SSS.Naming.build(index, url, folder);
           await this.background.downloadPng(dataUrl, filename);
 
           saved++;
@@ -241,62 +280,81 @@
         }
 
         if (this._cancelled) {
-          this.progressModal.setStatus(`已取消，成功保存 ${saved} 张。`);
+          this.progressModal.setStatus(SSS.I18n.t('progressCancelledPartial', { count: saved }));
         } else {
-          this.progressModal.setStatus(`全部完成，共保存 ${saved} 张 PNG 图片。`);
-          this.progressModal.done();
+          this.progressModal.setStatus(SSS.I18n.t('progressDone', { count: saved }));
+          this.progressModal.done(() => {
+            this.background.openDownloadsFolder();
+          });
         }
         this.onFinish?.(saved);
         return saved;
       } catch (err) {
-        // 出错时在模态框内显示错误信息（不立即关闭，便于用户查看）
-        const msg = err?.message || String(err);
-        this.progressModal.showError(msg);
+        this.progressModal.showError(err?.message || String(err));
         this.onError?.(err);
         throw err;
       } finally {
-        // 恢复原始滚动位置
         this._scrollTo(initScrollX, initScrollY);
       }
-    }
-
-    /* ==================== 区块裁剪 ==================== */
-
-    /**
-     * 从整页 canvas 中裁剪指定区块，返回 PNG data URL
-     * @param {HTMLCanvasElement} fullCanvas 整页 canvas
-     * @param {{x:number,y:number,w:number,h:number}} cell 区块（文档坐标）
-     * @param {number} dpr 设备像素比
-     * @returns {string} PNG data URL
-     */
-    _cropCell(fullCanvas, cell, dpr) {
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(cell.w * dpr));
-      canvas.height = Math.max(1, Math.round(cell.h * dpr));
-      const ctx = canvas.getContext('2d');
-
-      ctx.drawImage(
-        fullCanvas,
-        cell.x * dpr,
-        cell.y * dpr,
-        cell.w * dpr,
-        cell.h * dpr,
-        0,
-        0,
-        cell.w * dpr,
-        cell.h * dpr
-      );
-      return canvas.toDataURL('image/png');
     }
 
     /* ==================== 工具方法 ==================== */
 
     /**
-     * 滚动到指定位置（同步，禁用平滑滚动避免坐标漂移）
+     * 截取当前视口截图，并做频率控制与失败重试。
+     *
+     * Chrome 对 chrome.tabs.captureVisibleTab 有严格的速率限制
+     * （MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND），整页截图需要逐格调用，
+     * 若调用过快会触发配额错误。因此这里：
+     * - 每次调用间强制间隔一段时间（节流），避免超过每秒调用上限；
+     * - 若仍触发配额错误，则等待更久后重试，而不是直接中断整个流程。
+     * @returns {Promise<string>} 视口截图 data URL
+     */
+    async _captureVisibleTabThrottled() {
+      const THROTTLE_MS = 500; // 两次调用之间的最小间隔（毫秒）
+      const QUOTA_WAIT_MS = 1200; // 触发配额后额外等待（毫秒）
+      const MAX_RETRY = 5;
+
+      // 距上一次调用是否已过足够时间，不足则补齐
+      const now = Date.now();
+      if (this._lastCaptureAt && now - this._lastCaptureAt < THROTTLE_MS) {
+        await this._wait(THROTTLE_MS - (now - this._lastCaptureAt));
+      }
+
+      for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
+        try {
+          const { dataUrl } = await this.background.captureVisibleTab();
+          this._lastCaptureAt = Date.now();
+          return dataUrl;
+        } catch (e) {
+          const msg = e?.message || String(e);
+          const isQuota = /QUOTA|MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND/i.test(msg);
+          if (isQuota && attempt < MAX_RETRY) {
+            // 配额错误：等待更久后重试
+            await this._wait(QUOTA_WAIT_MS * (attempt + 1));
+            continue;
+          }
+          throw e;
+        }
+      }
+      throw new Error(SSS.I18n.t('progressCaptureErr'));
+    }
+
+    /**
+     * 滚动到指定位置（同步，强制使用 instant 行为避免平滑滚动动画）
      */
     _scrollTo(x, y) {
-      window.scrollTo(0, 0); // 先归零，防止某些页面累积
-      window.scrollTo(x, y);
+      const html = document.documentElement;
+      const prevBehavior = html.style.scrollBehavior || '';
+      html.style.scrollBehavior = 'auto';
+
+      try {
+        // 直接滚动到目标位置，不再进行无意义的 0,0 重置，减少闪烁与可能的渲染中断
+        window.scrollTo({ left: x, top: y, behavior: 'instant' });
+      } finally {
+        // 恢复页面原始滚动行为
+        html.style.scrollBehavior = prevBehavior;
+      }
     }
 
     /**
@@ -307,6 +365,16 @@
     }
 
     /**
+     * 等待浏览器完成至少一帧绘制（两次 requestAnimationFrame），
+     * 确保滚动后的画面已被渲染，避免 captureVisibleTab 截取到旧画面。
+     */
+    _waitForPaint() {
+      return new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      });
+    }
+
+    /**
      * 加载图片（dataURL）为 Image 对象
      */
     _loadImage(dataUrl) {
@@ -314,7 +382,7 @@
         const img = new Image();
         img.onload = () => resolve(img);
         img.onerror = () =>
-          reject(new Error('截图加载失败，可能是页面包含跨域资源导致画布被污染。'));
+          reject(new Error(SSS.I18n.t('progressImageLoadErr')));
         img.src = dataUrl;
       });
     }

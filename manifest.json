@@ -7,25 +7,32 @@
     "activeTab",
     "scripting",
     "downloads",
-    "storage"
+    "storage",
+    "offscreen"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "<all_urls>",
+    "file://*/*"
   ],
   "background": {
     "service_worker": "background/service-worker.js"
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["<all_urls>", "file://*/*"],
       "js": [
         "content/constants.js",
         "content/Storage.js",
         "content/BackgroundService.js",
         "content/modules/Naming.js",
+        "content/modules/I18n.js",
         "content/modules/ProgressModal.js",
+        "content/modules/SettingsModal.js",
+        "content/modules/CoffeeModal.js",
+        "content/modules/ClassSelectionModal.js",
         "content/modules/Ruler.js",
         "content/modules/GuideManager.js",
+        "content/modules/SelectionManager.js",
         "content/modules/ScreenshotManager.js",
         "content/modules/Toolbar.js",
         "content/index.js"
@@ -53,9 +60,10 @@
     {
       "resources": [
         "content/style.css",
-        "lib/html-to-image.js"
+        "lib/html-to-image.js",
+        "assets/pay_coffee.jpg"
       ],
-      "matches": ["<all_urls>"]
+      "matches": ["<all_urls>", "file://*/*"]
     }
   ]
 }

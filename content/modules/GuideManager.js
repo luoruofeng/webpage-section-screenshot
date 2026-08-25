@@ -25,6 +25,12 @@
       this._draggingId = null;
       this._activeId = null; // 当前被点击（显示删除按钮）的参考线
       this._tooltip = null;
+      this._persistQueue = Promise.resolve(); // 持久化串行队列，避免读-改-写竞态
+
+      // 参考线按页面 URL 隔离存储，避免在不同 Tab/页面之间串用。
+      // chrome.storage 是全局共享的，若不按 URL 区分，切换 Tab 后其他页面
+      // 的 content script 会加载出同一份参考线，导致参考线显示在所有页面上。
+      this._url = location.href;
 
       // 创建“文档定位层”：挂在文档根元素下，position:absolute 随页面滚动，
       // 参考线以文档坐标定位，从而“贴在页面某个位置”，滚动时随内容移动。
@@ -46,7 +52,7 @@
       const style = document.createElement('style');
       style.textContent = `
         #sss-guide-layer{position:absolute;top:0;left:0;width:0;height:0;pointer-events:none;z-index:2147483500;}
-        #sss-guide-layer .sss-guide{position:absolute;pointer-events:auto;background:#2563eb;transition:background-color .15s ease;}
+        #sss-guide-layer .sss-guide{position:absolute;pointer-events:auto;background:#2563eb;transition:background-color .15s ease;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;}
         #sss-guide-layer .sss-guide:hover{background:#1d4ed8;}
         #sss-guide-layer .sss-guide-vertical{top:0;bottom:0;width:2px;cursor:ew-resize;}
         #sss-guide-layer .sss-guide-horizontal{left:0;right:0;height:2px;cursor:ns-resize;}
@@ -81,7 +87,10 @@
     async load() {
       try {
         const data = await this.storage.get(SSS.STORAGE_KEY);
-        const list = data?.[SSS.STORAGE_KEY];
+        const all = data?.[SSS.STORAGE_KEY];
+        // 存储结构：{ sss_guides: { [url]: Array<guide> } }，仅取出当前页面的参考线
+        const list =
+          all && typeof all === 'object' && !Array.isArray(all) ? all[this._url] : null;
         if (Array.isArray(list)) {
           for (const g of list) {
             this._spawnGuide(g.vertical, g.pos, g.id);
@@ -123,6 +132,11 @@
      * @param {Object} data 拖拽初始数据
      */
     startDrag(data) {
+      // 拖拽期间禁用页面文本选择，避免框选到网页文字
+      this._blockSelection();
+      // 先更新定位层尺寸：预览线通过 top/bottom 或 left/right 拉伸来贴合父层，
+      // 若父层宽高仍为 0（首次拖拽、尚无任何参考线触发过 _resizeLayer），预览线将不可见。
+      this._resizeLayer();
       // 预览线使用文档坐标（client 坐标 + 起始滚动偏移）
       const docX = data.startClientX + data.scrollX;
       const docY = data.startClientY + data.scrollY;
@@ -144,9 +158,11 @@
     moveDrag(clientX, clientY) {
       if (!this._dragCtx) return;
       const ctx = this._dragCtx;
-      // 文档坐标 = 视口坐标 + 当前滚动偏移（无论拖拽开始时的滚动是多少）
-      const scrollX = window.scrollX || document.documentElement.scrollLeft;
-      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      // 文档坐标 = 视口坐标 + 当前滚动偏移（无论拖拽开始时的滚动是多少）。
+      // 拖拽期间不改动页面布局，直接读取实时滚动值即可。
+      const curScroll = this._currentScroll();
+      const scrollX = curScroll.x;
+      const scrollY = curScroll.y;
 
       if (ctx.vertical) {
         const pos = clientX + scrollX;
@@ -167,8 +183,9 @@
     endDrag(clientX, clientY) {
       if (!this._dragCtx) return;
       const ctx = this._dragCtx;
-      const scrollX = window.scrollX || document.documentElement.scrollLeft;
-      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const curScroll = this._currentScroll();
+      const scrollX = curScroll.x;
+      const scrollY = curScroll.y;
 
       // 文档坐标 = 视口坐标 + 当前滚动偏移
       const pos = ctx.vertical ? clientX + scrollX : clientY + scrollY;
@@ -176,6 +193,8 @@
       this._hideTooltip();
       ctx.preview.remove();
       this._dragCtx = null;
+      // 恢复页面文本选择
+      this._restoreSelection();
 
       // 忽略在标尺区域（厚度以内）释放，视为取消。
       // 竖线（vertical=true）来自左侧标尺：回到左侧（clientX<24）取消；
@@ -236,6 +255,8 @@
       guide.el.addEventListener('pointerdown', (e) => {
         if (e.button !== 0) return;
         e.stopPropagation();
+        // 阻止浏览器默认的文本选择行为
+        e.preventDefault();
         this._startMoveGuide(guide, e);
       });
 
@@ -251,13 +272,16 @@
      * 开始拖动修改参考线位置
      */
     _startMoveGuide(guide, e) {
+      // 拖动参考线期间禁用页面文本选择
+      this._blockSelection();
       this._draggingId = guide.id;
       this._movedDist = 0;
       this._moveStartClientX = e.clientX;
       this._moveStartClientY = e.clientY;
       this._moveStartPos = guide.pos;
-      this._moveStartScrollX = window.scrollX || document.documentElement.scrollLeft;
-      this._moveStartScrollY = window.scrollY || document.documentElement.scrollTop;
+      const startScroll = this._currentScroll();
+      this._moveStartScrollX = startScroll.x;
+      this._moveStartScrollY = startScroll.y;
 
       guide.el.classList.add('sss-guide-active');
       this._showTooltip(guide.vertical, e.clientX, e.clientY, `${guide.vertical ? 'X' : 'Y'}: ${guide.pos}px`);
@@ -273,17 +297,17 @@
       const dy = ev.clientY - this._moveStartClientY;
       this._movedDist = Math.max(Math.abs(dx), Math.abs(dy));
 
-      // 参考线为文档坐标，newPos = 起始文档坐标 + 鼠标位移 + 滚动增量
+      // 参考线为文档坐标，newPos = 起始文档坐标 + 鼠标位移 + 滚动增量。
+      // 拖拽期间不锁定滚动，直接取实时滚动值计算增量，页面不发生变化。
+      const curScroll = this._currentScroll();
       if (guide.vertical) {
-        const scrollDelta =
-          (window.scrollX || document.documentElement.scrollLeft) - this._moveStartScrollX;
+        const scrollDelta = curScroll.x - this._moveStartScrollX;
         const newPos = Math.max(0, Math.round(this._moveStartPos + dx + scrollDelta));
         guide.pos = newPos;
         guide.el.style.left = newPos + 'px';
         this._updateTooltip(ev.clientX, ev.clientY, `X: ${newPos}px`);
       } else {
-        const scrollDelta =
-          (window.scrollY || document.documentElement.scrollTop) - this._moveStartScrollY;
+        const scrollDelta = curScroll.y - this._moveStartScrollY;
         const newPos = Math.max(0, Math.round(this._moveStartPos + dy + scrollDelta));
         guide.pos = newPos;
         guide.el.style.top = newPos + 'px';
@@ -297,6 +321,8 @@
       guide.el.classList.remove('sss-guide-active');
       this._hideTooltip();
       this._draggingId = null;
+      // 恢复页面文本选择
+      this._restoreSelection();
       this._persist();
     }
 
@@ -322,7 +348,7 @@
       const btn = document.createElement('button');
       btn.className = 'sss-guide-delete-btn';
       btn.textContent = '×';
-      btn.title = '删除此参考线';
+      btn.title = SSS.I18n.t('guideDeleteTitle');
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         this.removeGuide(guide.id);
@@ -358,8 +384,50 @@
       this._guides = [];
       this._activeId = null;
       this._hideTooltip();
+      this._restoreSelection();
       this._persist();
       this.onChange?.(this.getGuides());
+    }
+
+    /* ---------- 文本选择禁用（拖拽期间避免框选网页内容） ---------- */
+
+    /**
+     * 拖拽期间禁用整个页面的文本选择，防止误选中网页文字。
+     * 通过向 <head> 注入高优先级样式实现，能覆盖页面自身设置的 user-select。
+     * 注意：这里只注入 user-select 样式，不修改 body/页面布局，
+     * 以保证拖拽参考线时页面背景色与位置不发生任何变化。
+     */
+    _blockSelection() {
+      if (this._blockStyle) return;
+      const style = document.createElement('style');
+      style.id = 'sss-block-selection';
+      style.textContent =
+        'body, body * { user-select:none !important; -webkit-user-select:none !important; -webkit-user-drag:none !important; }';
+      document.head.appendChild(style);
+      this._blockStyle = style;
+    }
+
+    /**
+     * 恢复页面的文本选择能力（移除注入的禁用样式）
+     */
+    _restoreSelection() {
+      this._blockStyle?.remove();
+      this._blockStyle = null;
+    }
+
+    /* ---------- 滚动读取（拖拽期间坐标换算使用实时滚动值） ---------- */
+
+    /**
+     * 获取当前滚动位置（文档坐标换算用）。
+     * 拖拽期间不做任何页面布局改动，直接读取实时滚动值即可。
+     * @returns {{x:number, y:number}}
+     */
+    _currentScroll() {
+      const doc = document.documentElement;
+      return {
+        x: window.scrollX || doc.scrollLeft,
+        y: window.scrollY || doc.scrollTop,
+      };
     }
 
     /* ---------- 预览与提示（拖拽辅助） ---------- */
@@ -408,19 +476,38 @@
 
     /* ---------- 持久化 ---------- */
 
-    _persist() {
-      const data = { [SSS.STORAGE_KEY]: this.getGuides() };
-      try {
-        this.storage.set(data);
-      } catch (e) {
-        console.warn('[SSS] 保存参考线失败:', e);
-      }
+    /**
+     * 持久化当前页面的参考线。
+     * 存储结构为 { sss_guides: { [url]: Array<guide> } }，仅更新当前页面对应的数组，
+     * 不覆盖其他页面的参考线。
+     * 使用串行队列避免“读-改-写”竞态：快速连续操作时保证最终写入的是最新状态。
+     */
+    async _persist() {
+      const guides = this.getGuides();
+      this._persistQueue = this._persistQueue.then(async () => {
+        try {
+          // 读取现有的 per-URL 存储对象，仅更新当前页面的参考线
+          const data = await this.storage.get(SSS.STORAGE_KEY);
+          const existing = data?.[SSS.STORAGE_KEY];
+          const all =
+            existing && typeof existing === 'object' && !Array.isArray(existing)
+              ? { ...existing }
+              : {};
+          all[this._url] = guides;
+          await this.storage.set({ [SSS.STORAGE_KEY]: all });
+        } catch (e) {
+          console.warn('[SSS] 保存参考线失败:', e);
+        }
+      });
+      // 链上已有的 Promise 全部捕获了异常，不会被 reject，安全 await 以免 unhandled
+      return this._persistQueue;
     }
 
     /* ---------- 生命周期 ---------- */
 
     destroy() {
       window.removeEventListener('resize', this._onResizeHandler);
+      this._restoreSelection();
       this._layer?.remove();
       this._layer = null;
     }

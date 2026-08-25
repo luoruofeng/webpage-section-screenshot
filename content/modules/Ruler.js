@@ -109,6 +109,8 @@
      * @param {PointerEvent} e 原始事件
      */
     _dragFromRuler(vertical, e) {
+      // 阻止浏览器默认的文本选择行为（标尺位于 Shadow DOM 内，需显式阻止）
+      e.preventDefault();
       const doc = document.documentElement;
       const scrollX = window.scrollX || doc.scrollLeft;
       const scrollY = window.scrollY || doc.scrollTop;
@@ -212,11 +214,11 @@
         ctx.stroke();
 
         if (isMajor) {
-          // 数字旋转 -90° 显示
+          // 数字旋转 -90° 显示，以标尺宽度中心对齐，避免左侧数字被裁剪
           ctx.save();
-          ctx.translate(w / this.dpr - 3, posY + 3);
+          ctx.translate(w / this.dpr / 2, posY + 3);
           ctx.rotate(-Math.PI / 2);
-          ctx.textAlign = 'right';
+          ctx.textAlign = 'center';
           ctx.fillText(String(y), 0, 0);
           ctx.restore();
         }
