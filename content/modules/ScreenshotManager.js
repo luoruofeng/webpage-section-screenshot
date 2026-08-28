@@ -191,19 +191,26 @@
 
             if (intersectW > 0 && intersectH > 0) {
               // 交集部分在视口截图中对应的源坐标（像素）
-              // 使用 Math.round 对坐标和尺寸取整，消除亚像素偏移导致的接缝
+              // 使用起始和终止坐标分别取整再相减，确保相邻 Tile 之间无缝衔接
               const sx = Math.round((intersectX - curScrollX) * dpr);
               const sy = Math.round((intersectY - curScrollY) * dpr);
-              const sw = Math.round(intersectW * dpr);
-              const sh = Math.round(intersectH * dpr);
+              // 限制 sx2/sy2 不超过图片的实际宽高，防止边缘出现空白
+              const sx2 = Math.min(viewW, Math.round((intersectRight - curScrollX) * dpr));
+              const sy2 = Math.min(viewH, Math.round((intersectBottom - curScrollY) * dpr));
+              const sw = Math.max(0, sx2 - sx);
+              const sh = Math.max(0, sy2 - sy);
 
               // 交集部分在目标 cell canvas 中对应的位置（像素，需乘 s）
               const dx = Math.round((intersectX - cell.x) * s);
               const dy = Math.round((intersectY - cell.y) * s);
-              const dw = Math.round(intersectW * s);
-              const dh = Math.round(intersectH * s);
+              const dx2 = Math.round((intersectRight - cell.x) * s);
+              const dy2 = Math.round((intersectBottom - cell.y) * s);
+              const dw = Math.max(0, dx2 - dx);
+              const dh = Math.max(0, dy2 - dy);
 
-              ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+              if (sw > 0 && sh > 0 && dw > 0 && dh > 0) {
+                ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+              }
             }
           }
 

@@ -20,78 +20,85 @@
       this._hintEl = null;
       
       this._buildLayer();
+      this._bindEvents();
     }
 
     _buildLayer() {
       const layer = document.createElement('div');
       layer.id = 'sss-selection-layer';
-      layer.style.cssText =
-        'position:absolute;top:0;left:0;width:0;height:0;' +
-        // 必须低于 Shadow DOM 宿主(2147483000)的 z-index，
-        // 否则选区框/参考线会盖住 Shadow 内的模态框（进度/关闭/打开文件夹按钮）。
-        'pointer-events:none;z-index:2147482500;';
       
       const style = document.createElement('style');
       style.textContent = `
+        #sss-selection-layer {
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 0;
+          height: 0;
+          pointer-events: none !important;
+          z-index: 2147482500 !important;
+        }
         #sss-selection-layer .sss-selection {
-          position: absolute;
-          pointer-events: auto;
-          border: 2px solid #2563eb;
-          background: rgba(37, 99, 235, 0.05);
-          box-sizing: border-box;
-          user-select: none;
-          transition: border-color .15s ease, background-color .15s ease;
+          position: absolute !important;
+          pointer-events: auto !important;
+          border: 2px solid #2563eb !important;
+          background: rgba(37, 99, 235, 0.05) !important;
+          box-sizing: border-box !important;
+          user-select: none !important;
+          -webkit-user-select: none !important;
+          transition: border-color .15s ease, background-color .15s ease !important;
         }
         #sss-selection-layer .sss-selection:hover {
-          border-color: #1d4ed8;
-          background: rgba(37, 99, 235, 0.1);
+          border-color: #1d4ed8 !important;
+          background: rgba(37, 99, 235, 0.1) !important;
         }
         #sss-selection-layer .sss-selection-preview {
-          position: absolute;
-          pointer-events: none;
-          border: 1px dashed #2563eb;
-          background: rgba(37, 99, 235, 0.1);
-          box-sizing: border-box;
+          position: absolute !important;
+          pointer-events: none !important;
+          border: 2px solid #2563eb !important;
+          background: rgba(37, 99, 235, 0.1) !important;
+          box-sizing: border-box !important;
+          opacity: 0.7 !important;
         }
         #sss-selection-layer .sss-selection-delete-btn {
-          position: absolute;
-          right: -9px;
-          top: -9px;
-          width: 18px;
-          height: 18px;
-          border: none;
-          border-radius: 50%;
-          background: #ef4444;
-          color: #fff;
-          font-size: 12px;
-          line-height: 1;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0;
-          z-index: 5;
-          box-shadow: 0 1px 4px rgba(0,0,0,.3);
-          transition: transform .15s ease, background-color .15s ease;
+          position: absolute !important;
+          right: -9px !important;
+          top: -9px !important;
+          width: 18px !important;
+          height: 18px !important;
+          border: none !important;
+          border-radius: 50% !important;
+          background: #ef4444 !important;
+          color: #fff !important;
+          font-size: 12px !important;
+          line-height: 1 !important;
+          cursor: pointer !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+          z-index: 5 !important;
+          box-shadow: 0 1px 4px rgba(0,0,0,.3) !important;
+          transition: transform .15s ease, background-color .15s ease !important;
         }
         #sss-selection-layer .sss-selection-delete-btn:hover {
-          background: #dc2626;
-          transform: scale(1.1);
+          background: #dc2626 !important;
+          transform: scale(1.1) !important;
         }
         #sss-selection-layer .sss-selection-hint {
-          position: absolute;
-          pointer-events: none;
-          background: rgba(0, 0, 0, 0.75);
-          color: #fff;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-size: 12px;
-          white-space: nowrap;
-          z-index: 10;
-          transform: translate(12px, 12px);
-          backdrop-filter: blur(4px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          font-family: -apple-system, sans-serif;
+          position: absolute !important;
+          pointer-events: none !important;
+          background: rgba(0, 0, 0, 0.75) !important;
+          color: #fff !important;
+          padding: 4px 8px !important;
+          border-radius: 4px !important;
+          font-size: 12px !important;
+          white-space: nowrap !important;
+          z-index: 10 !important;
+          transform: translate(12px, 12px) !important;
+          backdrop-filter: blur(4px) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          font-family: -apple-system, sans-serif !important;
         }
       `;
       layer.appendChild(style);
@@ -106,7 +113,13 @@
       this._layer.appendChild(this._hintEl);
     }
 
+    _bindEvents() {
+      this._onResizeHandler = () => this._resizeLayer();
+      window.addEventListener('resize', this._onResizeHandler, { passive: true });
+    }
+
     _resizeLayer() {
+      if (!this._layer) return;
       const doc = document.documentElement;
       const w = Math.max(doc.scrollWidth, window.innerWidth);
       const h = Math.max(doc.scrollHeight, window.innerHeight);
@@ -290,6 +303,7 @@
     }
 
     destroy() {
+      window.removeEventListener('resize', this._onResizeHandler);
       this._restoreSelection();
       this._layer?.remove();
     }

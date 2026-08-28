@@ -37,7 +37,7 @@
       this.screenshot = new SSS.ScreenshotManager(this.background, this.progressModal);
       this.toolbar = new SSS.Toolbar(this.shadow);
 
-      // 主菜单（工具条）显隐状态：默认显示
+      // 主菜单（工具条）显隐状态：默认显示（稍后会从存储中同步）
       this._menuVisible = true;
 
       this._wire();
@@ -49,8 +49,9 @@
     _initShadow() {
       this.hostEl = document.createElement('div');
       this.hostEl.id = 'sss-shadow-host';
+      // 初始隐藏，待设置加载后再根据状态显示，避免闪烁
       this.hostEl.style.cssText =
-        'all:initial;position:fixed;top:0;left:0;z-index:2147483000;';
+        'all:initial;position:fixed;top:0;left:0;z-index:2147483000;display:none;';
       document.documentElement.appendChild(this.hostEl);
       this.shadow = this.hostEl.attachShadow({ mode: 'open' });
 
@@ -148,6 +149,11 @@
       });
       this.settingsModal.load().then((settings) => {
         this.toolbar.updateShortcut(settings.selectionShortcut);
+        // 同步持久化的主菜单显隐状态
+        this._menuVisible = this.settingsModal.menuVisible;
+        this._setUiVisible(this._menuVisible);
+        // 加载完成后显示宿主元素
+        if (this.hostEl) this.hostEl.style.display = 'block';
       });
     }
 
@@ -236,6 +242,8 @@
       if (this._menuVisible) {
         this.toolbar?.updateToggleLabel?.(this.ruler.visible);
       }
+      // 持久化保存状态
+      this.settingsModal.setMenuVisible(this._menuVisible);
       return this._menuVisible;
     }
 

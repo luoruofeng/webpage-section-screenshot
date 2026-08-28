@@ -20,7 +20,17 @@
       this._settings = {
         selectionShortcut: 'p',
         language: SSS.I18n.lang,
+        menuVisible: true, // 默认开启
       };
+    }
+
+    async setMenuVisible(visible) {
+      this._settings.menuVisible = !!visible;
+      await this.save();
+    }
+
+    get menuVisible() {
+      return this._settings.menuVisible !== false; // 默认为 true
     }
 
     async load() {
