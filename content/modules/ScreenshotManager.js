@@ -108,6 +108,14 @@
         }
       }
 
+      // 3. 统一按网页顺序排序：从上到下，从左到右
+      cells.sort((a, b) => {
+        if (Math.abs(a.y - b.y) > 1) {
+          return a.y - b.y;
+        }
+        return a.x - b.x;
+      });
+
       return cells;
     }
 
@@ -143,9 +151,13 @@
         return canvas;
       });
 
-      // 2. 计算需要滚动的网格
-      const cols = Math.ceil(docWidth / vw);
-      const rows = Math.ceil(docHeight / vh);
+      // 2. 计算需要滚动的网格（增加重叠以消除接缝黑线）
+      const overlap = 20; // 20px 重叠区域
+      const stepW = vw - overlap;
+      const stepH = vh - overlap;
+      
+      const cols = Math.max(1, Math.ceil((docWidth - overlap) / stepW));
+      const rows = Math.max(1, Math.ceil((docHeight - overlap) / stepH));
       const totalTiles = cols * rows;
       let capturedTiles = 0;
 
@@ -154,8 +166,9 @@
         for (let col = 0; col < cols; col++) {
           if (this._cancelled) return cellCanvases;
 
-          const tileX = col * vw;
-          const tileY = row * vh;
+          // 计算滚动位置，确保最后一块不会超出文档边界
+          const tileX = Math.min(col * stepW, Math.max(0, docWidth - vw));
+          const tileY = Math.min(row * stepH, Math.max(0, docHeight - vh));
           this._scrollTo(tileX, tileY);
 
           // 等待渲染稳定
@@ -191,22 +204,17 @@
 
             if (intersectW > 0 && intersectH > 0) {
               // 交集部分在视口截图中对应的源坐标（像素）
-              // 使用起始和终止坐标分别取整再相减，确保相邻 Tile 之间无缝衔接
-              const sx = Math.round((intersectX - curScrollX) * dpr);
-              const sy = Math.round((intersectY - curScrollY) * dpr);
-              // 限制 sx2/sy2 不超过图片的实际宽高，防止边缘出现空白
-              const sx2 = Math.min(viewW, Math.round((intersectRight - curScrollX) * dpr));
-              const sy2 = Math.min(viewH, Math.round((intersectBottom - curScrollY) * dpr));
-              const sw = Math.max(0, sx2 - sx);
-              const sh = Math.max(0, sy2 - sy);
+              // 使用精确浮点坐标，让浏览器处理子像素渲染，避免 Math.round 导致的接缝
+              const sx = (intersectX - curScrollX) * dpr;
+              const sy = (intersectY - curScrollY) * dpr;
+              const sw = intersectW * dpr;
+              const sh = intersectH * dpr;
 
               // 交集部分在目标 cell canvas 中对应的位置（像素，需乘 s）
-              const dx = Math.round((intersectX - cell.x) * s);
-              const dy = Math.round((intersectY - cell.y) * s);
-              const dx2 = Math.round((intersectRight - cell.x) * s);
-              const dy2 = Math.round((intersectBottom - cell.y) * s);
-              const dw = Math.max(0, dx2 - dx);
-              const dh = Math.max(0, dy2 - dy);
+              const dx = (intersectX - cell.x) * s;
+              const dy = (intersectY - cell.y) * s;
+              const dw = intersectW * s;
+              const dh = intersectH * s;
 
               if (sw > 0 && sh > 0 && dw > 0 && dh > 0) {
                 ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
@@ -249,6 +257,10 @@
       const folder = SSS.Naming.folderName();
       const initScrollX = window.scrollX || document.documentElement.scrollLeft;
       const initScrollY = window.scrollY || document.documentElement.scrollTop;
+
+      // 临时隐藏滚动条，避免截图包含滚动条或因其导致的布局偏移
+      const originalOverflow = document.documentElement.style.overflow;
+      document.documentElement.style.overflow = 'hidden';
 
       try {
         const dpr = window.devicePixelRatio || 1;
@@ -301,6 +313,7 @@
         this.onError?.(err);
         throw err;
       } finally {
+        document.documentElement.style.overflow = originalOverflow;
         this._scrollTo(initScrollX, initScrollY);
       }
     }
