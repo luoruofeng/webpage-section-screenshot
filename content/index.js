@@ -29,6 +29,7 @@
       this.ruler = new SSS.Ruler(this.shadow, SSS.RULER_SIZE);
       this.guides = new SSS.GuideManager(this.shadow, this.storage);
       this.selections = new SSS.SelectionManager(this.shadow);
+      this.domInspector = new SSS.DomInspector();
       this.progressModal = new SSS.ProgressModal(this.shadow);
       this.settingsModal = new SSS.SettingsModal(this.shadow, this.storage);
       this.howToUseModal = new SSS.HowToUseModal(this.shadow, this.storage);
@@ -68,11 +69,12 @@
     _wire() {
       // 标尺 -> 参考线：拖拽创建
       this.ruler.onDragStart = (data) => {
-        // 从标尺拖动参考线时，自动关闭选区状态
+        // 从标尺拖动参考线时，自动关闭选区状态与 DOM 检查状态
         if (this.selections.active) {
           this.selections.setActive(false);
           this.toolbar.updateSelectionState(false);
         }
+        if (this.domInspector.active) this.domInspector.disable();
         this.guides.startDrag(data);
       };
       this.ruler.onDragMove = (x, y) => this.guides.moveDrag(x, y);
@@ -98,6 +100,8 @@
         this.toolbar.updateToggleLabel?.(this.ruler.visible);
       };
       this.toolbar.onToggleSelection = (active) => {
+        // 选区框与 DOM 检查互斥：开启选区框时关闭 DOM 检查
+        if (active && this.domInspector.active) this.domInspector.disable();
         this.selections.setActive(active);
       };
       this.toolbar.onOpenSettings = () => {
@@ -108,6 +112,23 @@
       };
       this.toolbar.onAutoSelection = () => {
         this.classSelectionModal.show();
+      };
+      this.toolbar.onDomInspect = (active) => {
+        // DOM 检查与选区框互斥：开启检查时关闭选区框，避免拖拽与点击语义冲突
+        if (active && this.selections.active) {
+          this.selections.setActive(false);
+          this.toolbar.updateSelectionState(false);
+        }
+        if (active) this.domInspector.enable();
+        else this.domInspector.disable();
+      };
+
+      // DOM 检查状态可能由模块内部关闭（单击复制 / ESC），此处同步工具条按钮
+      this.domInspector.onStateChange = (active) => {
+        this.toolbar.updateDomInspectState(active);
+      };
+      this.domInspector.onCopy = (xpath) => {
+        this._notify(SSS.I18n.t('notifyXPathCopied', { xpath }), 'info');
       };
 
       this.classSelectionModal.onConfirm = (className) => {
@@ -132,6 +153,7 @@
       SSS.I18n.onLanguageChange = () => {
         this.toolbar.refreshTexts();
         this.selections.refreshTexts();
+        this.domInspector.refreshTexts();
       };
 
       // 截图回调：错误信息已由 ScreenshotManager 在模态框内 showError 展示，
@@ -206,8 +228,8 @@
 
       // 全局快捷键监听
       window.addEventListener('keydown', (e) => {
-        // 如果正在输入（例如在设置框内），则不触发快捷键
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable || e.target.classList.contains('sss-shortcut-input')) {
+        // 如果正在输入（例如在设置框/class 输入框内），则不触发快捷键
+        if (this._isTypingTarget(e)) {
           return;
         }
 
@@ -215,6 +237,8 @@
         if (e.key.toLowerCase() === shortcut) {
           e.preventDefault();
           const nextActive = !this.selections.active;
+          // 开启选区框时关闭 DOM 检查，两种交互模式互斥
+          if (nextActive && this.domInspector.active) this.domInspector.disable();
           this.selections.setActive(nextActive);
           this.toolbar.updateSelectionState(nextActive);
         }
@@ -226,6 +250,30 @@
             this.toolbar.updateSelectionState(false);
           }
         }
+      });
+    }
+
+    /**
+     * 判断键盘事件的真实目标是否处于“输入态”（输入框 / 文本域 / 下拉框 / 可编辑元素）
+     *
+     * 扩展 UI 全部挂载在 Shadow DOM 内，事件冒泡到 window 时 e.target 会被
+     * 重定向为宿主元素（#sss-shadow-host），无法再通过 tagName 判断，
+     * 因此必须遍历 composedPath() 拿到 Shadow Root 内部的真实目标。
+     * @param {KeyboardEvent} e
+     * @returns {boolean}
+     */
+    _isTypingTarget(e) {
+      const path = typeof e.composedPath === 'function' ? e.composedPath() : [e.target];
+      return path.some((node) => {
+        if (!node || node.nodeType !== 1) return false;
+        const tag = node.tagName;
+        return (
+          tag === 'INPUT' ||
+          tag === 'TEXTAREA' ||
+          tag === 'SELECT' ||
+          node.isContentEditable === true ||
+          node.classList?.contains('sss-shortcut-input')
+        );
       });
     }
 
@@ -256,6 +304,7 @@
       this.ruler?.setDomVisible(visible);
       this.guides?.setVisible(visible);
       this.selections?.setVisible(visible);
+      this.domInspector?.setVisible(visible);
       this.toolbar?.setVisible(visible);
     }
 

@@ -33,6 +33,8 @@
       toolbarSelectionOn: '开启选区框',
       toolbarSelectionOff: '关闭选区框',
       toolbarAutoSelection: '自动选区 (Class)',
+      toolbarDomInspect: '检查 DOM 元素',
+      domInspectorTip: '单击复制该元素的完整路径',
       toolbarToggleOn: '隐藏标尺',
       toolbarToggleOff: '显示标尺',
       toolbarSettings: '设置',
@@ -86,6 +88,7 @@
       notifyClassAdded: '已根据 .{className} 自动添加 {count} 个选区。',
       notifyClassNotFound: '未找到 Class 为 .{className} 的可见元素。',
       notifyNoRegion: '请设置参考线或选区框以划分截图区域。',
+      notifyXPathCopied: '已复制元素路径：{xpath}',
       // Popup
       popupTitle: '网页分区截图',
       popupSubtitle: '拖拽标尺划分区域，保存为 PNG',
@@ -139,6 +142,14 @@
           ],
         },
         {
+          title: '检查 DOM 元素',
+          steps: [
+            '点击工具条上的“检查 DOM 元素”按钮，鼠标指针会变成蓝色准星，表示检查状态已开启。',
+            '将鼠标移到页面任意位置，正下方层级最深的元素会被蓝色半透明层高亮，并显示它的完整 XPath（包含 id 与 class）。',
+            '单击即可复制该元素的完整 XPath，并自动关闭检查状态；按 ESC 也可直接关闭。',
+          ],
+        },
+        {
           title: '开始裁切并保存 PNG',
           steps: [
             '划分好区域后，点击工具条顶部的“开始裁切 PNG”按钮。',
@@ -171,6 +182,8 @@
       toolbarSelectionOn: 'Enable Selection',
       toolbarSelectionOff: 'Disable Selection',
       toolbarAutoSelection: 'Auto Select (Class)',
+      toolbarDomInspect: 'Inspect DOM',
+      domInspectorTip: 'Click to copy the full path',
       toolbarToggleOn: 'Hide Ruler',
       toolbarToggleOff: 'Show Ruler',
       toolbarSettings: 'Settings',
@@ -216,6 +229,7 @@
       notifyClassAdded: 'Added {count} selections based on .{className}.',
       notifyClassNotFound: 'No visible element found with Class .{className}.',
       notifyNoRegion: 'Please set guides or a selection box to define the screenshot area.',
+      notifyXPathCopied: 'Element path copied: {xpath}',
       popupTitle: 'Webpage Section Screenshot',
       popupSubtitle: 'Drag the ruler to divide areas, save as PNG',
       popupClearAll: 'Clear All Guides',
@@ -268,6 +282,14 @@
           ],
         },
         {
+          title: 'Inspecting DOM Elements',
+          steps: [
+            'Click the "Inspect DOM" button on the toolbar; the cursor becomes a blue crosshair, meaning inspection is ON.',
+            'Move the mouse anywhere on the page: the deepest element under the cursor is highlighted with a translucent blue box, and its full XPath (including id and class) is shown.',
+            'Click to copy the full XPath and exit inspection automatically; press ESC to exit as well.',
+          ],
+        },
+        {
           title: 'Starting the Crop and Saving PNG',
           steps: [
             'After dividing the areas, click the "Start Crop PNG" button at the top of the toolbar.',
@@ -300,6 +322,8 @@
       toolbarSelectionOn: '選択枠を有効化',
       toolbarSelectionOff: '選択枠を無効化',
       toolbarAutoSelection: '自動選択 (Class)',
+      toolbarDomInspect: 'DOM 要素を検査',
+      domInspectorTip: 'クリックで完全パスをコピー',
       toolbarToggleOn: 'ルーラーを隠す',
       toolbarToggleOff: 'ルーラーを表示',
       toolbarSettings: '設定',
@@ -345,6 +369,7 @@
       notifyClassAdded: '.{className} に基づき {count} 個の選択を追加しました。',
       notifyClassNotFound: 'Class .{className} の表示要素が見つかりません。',
       notifyNoRegion: 'スクリーンショット範囲を指定するため、ガイドまたは選択枠を設定してください。',
+      notifyXPathCopied: '要素のパスをコピーしました：{xpath}',
       popupTitle: 'ウェブページ区画スクリーンショット',
       popupSubtitle: 'ルーラーをドラッグして範囲を分割し、PNG で保存',
       popupClearAll: 'すべてのガイドをクリア',
@@ -397,6 +422,14 @@
           ],
         },
         {
+          title: 'DOM 要素を検査',
+          steps: [
+            'ツールバーの「DOM 要素を検査」ボタンをクリックすると、マウスカーソルが青いクロスヘアになり、検査状態であることを示します。',
+            'ページ上でマウスを動かすと、カーソル直下の最も深い要素が青い半透明の枠でハイライトされ、完全な XPath（id と class を含む）が表示されます。',
+            'クリックすると完全な XPath がコピーされ、検査状態は自動的に終了します。ESC でも終了できます。',
+          ],
+        },
+        {
           title: '切り出しを開始して PNG を保存',
           steps: [
             '領域を分割したら、ツールバー上部の「PNG 切り出し開始」ボタンをクリックします。',
@@ -429,6 +462,8 @@
       toolbarSelectionOn: '선택 영역 켜기',
       toolbarSelectionOff: '선택 영역 끄기',
       toolbarAutoSelection: '자동 선택 (Class)',
+      toolbarDomInspect: 'DOM 요소 검사',
+      domInspectorTip: '클릭하여 전체 경로 복사',
       toolbarToggleOn: '눈금자 숨기기',
       toolbarToggleOff: '눈금자 표시',
       toolbarSettings: '설정',
@@ -474,6 +509,7 @@
       notifyClassAdded: '.{className} 기준으로 {count}개의 선택 영역을 추가했습니다.',
       notifyClassNotFound: 'Class .{className}의 표시 요소를 찾을 수 없습니다.',
       notifyNoRegion: '스크린샷 영역을 지정하려면 가이드 또는 선택 영역을 설정하세요.',
+      notifyXPathCopied: '요소 경로를 복사했습니다: {xpath}',
       popupTitle: '웹페이지 영역 스크린샷',
       popupSubtitle: '눈금자를 드래그해 영역을 나누고 PNG로 저장',
       popupClearAll: '모든 가이드 지우기',
@@ -526,6 +562,14 @@
           ],
         },
         {
+          title: 'DOM 요소 검사',
+          steps: [
+            '도구 모음의 "DOM 요소 검사" 버튼을 클릭하면 마우스 커서가 파란 십자 모양으로 바뀌어 검사 상태임을 나타냅니다.',
+            '페이지 어디든 마우스를 움직이면 커서 바로 아래 가장 깊은 요소가 파란 반투명 박스로 강조되고, 전체 XPath(id와 class 포함)가 표시됩니다.',
+            '클릭하면 전체 XPath가 복사되고 검사 상태가 자동으로 종료됩니다. ESC로도 종료할 수 있습니다.',
+          ],
+        },
+        {
           title: '자르기 시작 및 PNG 저장',
           steps: [
             '영역을 나눈 후 도구 모음 상단의 "PNG 자르기 시작" 버튼을 클릭합니다.',
@@ -558,6 +602,8 @@
       toolbarSelectionOn: 'Activar selección',
       toolbarSelectionOff: 'Desactivar selección',
       toolbarAutoSelection: 'Selección automática (Class)',
+      toolbarDomInspect: 'Inspeccionar DOM',
+      domInspectorTip: 'Haz clic para copiar la ruta completa',
       toolbarToggleOn: 'Ocultar regla',
       toolbarToggleOff: 'Mostrar regla',
       toolbarSettings: 'Ajustes',
@@ -603,6 +649,7 @@
       notifyClassAdded: 'Se añadieron {count} selecciones basadas en .{className}.',
       notifyClassNotFound: 'No se encontró ningún elemento visible con la Class .{className}.',
       notifyNoRegion: 'Establece guías o un cuadro de selección para definir el área de captura.',
+      notifyXPathCopied: 'Ruta del elemento copiada: {xpath}',
       popupTitle: 'Captura de sección de página web',
       popupSubtitle: 'Arrastra la regla para dividir áreas y guarda como PNG',
       popupClearAll: 'Limpiar todas las guías',
@@ -655,6 +702,14 @@
           ],
         },
         {
+          title: 'Inspeccionar elementos DOM',
+          steps: [
+            'Haz clic en el botón "Inspeccionar DOM" de la barra: el cursor se vuelve una mira azul, lo que indica que la inspección está activada.',
+            'Mueve el ratón por cualquier parte de la página: el elemento más profundo bajo el cursor se resalta con un recuadro azul translúcido y se muestra su XPath completo (incluye id y class).',
+            'Haz clic para copiar el XPath completo y salir de la inspección automáticamente; también puedes pulsar ESC para salir.',
+          ],
+        },
+        {
           title: 'Iniciar el recorte y guardar PNG',
           steps: [
             'Tras dividir las áreas, haz clic en el botón "Iniciar recorte PNG" en la parte superior de la barra.',
@@ -687,6 +742,8 @@
       toolbarSelectionOn: 'Activer la sélection',
       toolbarSelectionOff: 'Désactiver la sélection',
       toolbarAutoSelection: 'Sélection auto (Class)',
+      toolbarDomInspect: 'Inspecter le DOM',
+      domInspectorTip: 'Cliquez pour copier le chemin complet',
       toolbarToggleOn: 'Masquer la règle',
       toolbarToggleOff: 'Afficher la règle',
       toolbarSettings: 'Paramètres',
@@ -732,6 +789,7 @@
       notifyClassAdded: '{count} sélections ajoutées basées sur .{className}.',
       notifyClassNotFound: 'Aucun élément visible trouvé avec la Class .{className}.',
       notifyNoRegion: 'Définissez des guides ou un cadre de sélection pour la zone de capture.',
+      notifyXPathCopied: 'Chemin de l’élément copié : {xpath}',
       popupTitle: 'Capture de section de page web',
       popupSubtitle: 'Faites glisser la règle pour diviser les zones, enregistrez en PNG',
       popupClearAll: 'Effacer toutes les guides',
@@ -784,6 +842,14 @@
           ],
         },
         {
+          title: 'Inspecter les éléments DOM',
+          steps: [
+            'Cliquez sur le bouton « Inspecter le DOM » de la barre d\'outils : le curseur devient une croix bleue, indiquant que l\'inspection est activée.',
+            'Déplacez la souris n\'importe où sur la page : l\'élément le plus profond sous le curseur est mis en surbrillance par un cadre bleu translucide et son XPath complet (id et class inclus) est affiché.',
+            'Cliquez pour copier le XPath complet et quitter automatiquement l\'inspection ; ESC permet aussi de quitter.',
+          ],
+        },
+        {
           title: 'Lancer le recadrage et enregistrer en PNG',
           steps: [
             'Après avoir divisé les zones, cliquez sur le bouton "Démarrer le recadrage PNG" en haut de la barre.',
@@ -816,6 +882,8 @@
       toolbarSelectionOn: 'Auswahl aktivieren',
       toolbarSelectionOff: 'Auswahl deaktivieren',
       toolbarAutoSelection: 'Auto-Auswahl (Class)',
+      toolbarDomInspect: 'DOM prüfen',
+      domInspectorTip: 'Klicken, um den vollständigen Pfad zu kopieren',
       toolbarToggleOn: 'Lineal ausblenden',
       toolbarToggleOff: 'Lineal anzeigen',
       toolbarSettings: 'Einstellungen',
@@ -861,6 +929,7 @@
       notifyClassAdded: '{count} Auswahlen basierend auf .{className} hinzugefügt.',
       notifyClassNotFound: 'Kein sichtbares Element mit Class .{className} gefunden.',
       notifyNoRegion: 'Legen Sie Hilfslinien oder eine Auswahl fest, um den Screenshot-Bereich zu definieren.',
+      notifyXPathCopied: 'Elementpfad kopiert: {xpath}',
       popupTitle: 'Webseiten-Abschnitt Screenshot',
       popupSubtitle: 'Ziehen Sie am Lineal, um Bereiche zu teilen, und speichern Sie als PNG',
       popupClearAll: 'Alle Hilfslinien löschen',
@@ -913,6 +982,14 @@
           ],
         },
         {
+          title: 'DOM-Elemente prüfen',
+          steps: [
+            'Klicken Sie in der Symbolleiste auf "DOM prüfen": Der Mauszeiger wird zu einem blauen Fadenkreuz, was den aktiven Prüfmodus anzeigt.',
+            'Bewegen Sie die Maus an eine beliebige Stelle der Seite: Das tiefste Element unter dem Zeiger wird mit einem halbtransparenten blauen Rahmen hervorgehoben und sein vollständiger XPath (inkl. id und class) angezeigt.',
+            'Ein Klick kopiert den vollständigen XPath und beendet den Prüfmodus automatisch; ESC beendet ihn ebenfalls.',
+          ],
+        },
+        {
           title: 'Zuschnitt starten und PNG speichern',
           steps: [
             'Klicken Sie nach dem Teilen der Bereiche oben in der Symbolleiste auf "PNG-Zuschnitt starten".',
@@ -945,6 +1022,8 @@
       toolbarSelectionOn: 'Включить выделение',
       toolbarSelectionOff: 'Выключить выделение',
       toolbarAutoSelection: 'Автовыделение (Class)',
+      toolbarDomInspect: 'Проверить DOM',
+      domInspectorTip: 'Нажмите, чтобы скопировать полный путь',
       toolbarToggleOn: 'Скрыть линейку',
       toolbarToggleOff: 'Показать линейку',
       toolbarSettings: 'Настройки',
@@ -990,6 +1069,7 @@
       notifyClassAdded: 'Добавлено {count} выделений на основе .{className}.',
       notifyClassNotFound: 'Видимый элемент с Class .{className} не найден.',
       notifyNoRegion: 'Задайте направляющие или выделение, чтобы определить область снимка.',
+      notifyXPathCopied: 'Путь элемента скопирован: {xpath}',
       popupTitle: 'Снимок секции веб-страницы',
       popupSubtitle: 'Перетащите линейку, чтобы разделить области, и сохраните в PNG',
       popupClearAll: 'Очистить все направляющие',
@@ -1039,6 +1119,14 @@
             'Нажмите кнопку «Автовыделение» на панели инструментов.',
             'Введите CSS-имя Class элементов (например, card-item).',
             'Для всех элементов, соответствующих этому Class, автоматически создаются выделения.',
+          ],
+        },
+        {
+          title: 'Проверка элементов DOM',
+          steps: [
+            'Нажмите кнопку «Проверить DOM» на панели инструментов — курсор станет синим перекрестием, что означает включённый режим проверки.',
+            'Перемещайте мышь в любом месте страницы: самый глубокий элемент под курсором подсветится полупрозрачной синей рамкой, а в подсказке отобразится его полный XPath (с id и class).',
+            'Нажмите, чтобы скопировать полный XPath; режим проверки выключится автоматически. Также можно выйти по ESC.',
           ],
         },
         {

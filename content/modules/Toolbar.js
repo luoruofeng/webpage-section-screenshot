@@ -18,13 +18,16 @@
       this.onToggleRuler = null; // 切换标尺
       this.onToggleSelection = null; // 切换选区框模式
       this.onAutoSelection = null; // 自动选区 (Class)
+      this.onDomInspect = null; // 检查 DOM 元素
       this.onOpenSettings = null; // 打开设置
       this.onOpenCoffee = null; // 请喝咖啡
       this._el = null;
       this._guideCountEl = null;
       this._toggleBtn = null;
       this._selectionBtn = null;
+      this._domInspectBtn = null;
       this._selectionActive = false;
+      this._domInspectActive = false;
       this._shortcut = 'P';
       this._rulerVisible = true;
       this._guideCount = 0;
@@ -52,6 +55,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="4 2"/><path d="M12 8v8M8 12h8"/></svg>
           ${i18n.t('toolbarAutoSelection')}
         </button>
+        <button class="sss-btn sss-btn-secondary sss-dom-inspect-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/><path d="M8 10.5h5"/></svg>
+          ${i18n.t('toolbarDomInspect')}
+        </button>
         <button class="sss-btn sss-btn-secondary sss-toggle-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M12 3v18"/></svg>
           ${i18n.t('toolbarToggleOn')}
@@ -70,6 +77,7 @@
       this._guideCountEl = el.querySelector('.sss-guide-count');
       this._toggleBtn = el.querySelector('.sss-toggle-btn');
       this._selectionBtn = el.querySelector('.sss-selection-btn');
+      this._domInspectBtn = el.querySelector('.sss-dom-inspect-btn');
 
       el.querySelector('.sss-start-btn').addEventListener('click', () => this.onStart?.());
       el.querySelector('.sss-clear-btn').addEventListener('click', () => this.onClear?.());
@@ -82,6 +90,11 @@
         this.onToggleSelection?.(this._selectionActive);
       });
       el.querySelector('.sss-auto-selection-btn').addEventListener('click', () => this.onAutoSelection?.());
+      this._domInspectBtn.addEventListener('click', () => {
+        const next = !this._domInspectActive;
+        this.updateDomInspectState(next);
+        this.onDomInspect?.(next);
+      });
 
       this.host.appendChild(el);
     }
@@ -100,6 +113,18 @@
         } else {
           this._selectionBtn.classList.remove('sss-btn-active');
         }
+      }
+    }
+
+    /**
+     * 更新“检查 DOM 元素”按钮的激活状态
+     * 按钮文案保持不变，仅通过高亮样式表示当前处于检查状态
+     * @param {boolean} active
+     */
+    updateDomInspectState(active) {
+      this._domInspectActive = active;
+      if (this._domInspectBtn) {
+        this._domInspectBtn.classList.toggle('sss-btn-active', active);
       }
     }
 
@@ -145,6 +170,8 @@
         this._el.querySelector('.sss-clear-btn').lastChild.textContent = i18n.t('toolbarClear');
         this._el.querySelector('.sss-auto-selection-btn').lastChild.textContent =
           i18n.t('toolbarAutoSelection');
+        this._el.querySelector('.sss-dom-inspect-btn').lastChild.textContent =
+          i18n.t('toolbarDomInspect');
         this._el.querySelector('.sss-settings-btn').lastChild.textContent =
           i18n.t('toolbarSettings');
         this._el.querySelector('.sss-coffee-btn').lastChild.textContent = i18n.t('toolbarCoffee');

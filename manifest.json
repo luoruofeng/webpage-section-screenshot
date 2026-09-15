@@ -35,6 +35,7 @@
         "content/modules/GuideManager.js",
         "content/modules/SelectionManager.js",
         "content/modules/ScreenshotManager.js",
+        "content/modules/DomInspector.js",
         "content/modules/Toolbar.js",
         "content/index.js"
       ],
