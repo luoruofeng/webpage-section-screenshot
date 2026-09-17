@@ -27,6 +27,7 @@ SSS.MSG = {
   CLEAR_GUIDES: 'SSS_CLEAR_GUIDES',   // Popup -> Content：清空参考线
   TOGGLE_RULER: 'SSS_TOGGLE_RULER',   // Popup -> Content：切换标尺
   TOGGLE_MENU: 'SSS_TOGGLE_MENU',     // Background -> Content：切换主菜单（工具条+标尺）
+  SYNC_MENU: 'SSS_SYNC_MENU',         // Content -> Background：同步主菜单显隐（更新插件图标角标）
   GET_STATE: 'SSS_GET_STATE',         // Popup -> Content：获取状态
   CAPTURE_VISIBLE_TAB: 'CAPTURE_VISIBLE_TAB', // Content -> Background：视口截图
   DOWNLOAD_PNG: 'DOWNLOAD_PNG',       // Content -> Background：下载 PNG

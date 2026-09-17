@@ -160,6 +160,13 @@ async function handleMessage(message, sender) {
       return { ok: true };
     }
 
+    case 'SSS_SYNC_MENU': {
+      // Content -> Background：工具条内“关闭”按钮触发，同步插件图标角标，
+      // 使其与直接点击插件图标关闭时保持一致
+      updateBadge(!!message.visible);
+      return { ok: true };
+    }
+
     case 'OFFSCREEN_CHUNK':
     case 'OFFSCREEN_ASSEMBLE':
       // 该消息仅面向 Offscreen Document（离屏文档）处理，Service Worker 不响应，

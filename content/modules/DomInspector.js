@@ -5,7 +5,7 @@
  * - 开启后鼠标指针变为醒目的“检查准星”，直观提示当前处于检查状态
  * - 鼠标悬停时高亮鼠标正下方“层级最深”的元素（蓝色半透明覆盖层，可透视元素内容）
  * - 实时显示该元素的增强版 Full XPath（在标准路径基础上附加 id 与 class）
- * - 单击复制该 XPath 并自动退出检查状态，ESC 亦可退出
+ * - 单击将鼠标所指元素添加为选区框（同时复制其 XPath），保持检查状态以支持连续点选，ESC 退出
  *
  * 高内聚：准星光标、高亮层、提示框与 XPath 计算全部封装于此；
  * 低耦合：通过回调向外通知状态变化与复制结果，不直接依赖其它模块。
@@ -115,7 +115,7 @@
       this._currentXPath = '';
 
       this.onStateChange = null; // 启用/停用回调（供工具条同步按钮状态）
-      this.onCopy = null; // 复制成功回调（供外部提示）
+      this.onPick = null; // 点选回调 (element, rect, xpath)，供外部添加选区框
 
       this._build();
       this._bindEvents();
@@ -220,12 +220,18 @@
         e.stopPropagation();
         e.stopImmediatePropagation();
 
-        const xpath = this._currentXPath;
-        this.disable();
-        if (xpath) {
-          this._copy(xpath);
-          this.onCopy?.(xpath);
-        }
+        // 以点击位置命中的元素为准，避免鼠标微动导致与高亮元素不一致
+        const el = this._elementAt(e.clientX, e.clientY);
+        if (!el || el.nodeType !== 1) return;
+
+        const xpath = getFullXPath(el);
+        this._currentXPath = xpath;
+
+        // 保留“复制 XPath”能力，便于用户直接粘贴使用
+        this._copy(xpath);
+
+        // 通知外部把该元素区域添加为选区框；不退出检查状态，支持连续点选
+        this.onPick?.(el, el.getBoundingClientRect(), xpath);
       };
 
       this._onKeyDown = (e) => {

@@ -100,6 +100,11 @@
           border: 1px solid rgba(255, 255, 255, 0.1) !important;
           font-family: -apple-system, sans-serif !important;
         }
+        /* DOM 检查模式下：选区框整体不拦截鼠标，点击可穿透到下方页面元素 */
+        #sss-selection-layer.sss-selection-passthrough .sss-selection,
+        #sss-selection-layer.sss-selection-passthrough .sss-selection-delete-btn {
+          pointer-events: none !important;
+        }
       `;
       layer.appendChild(style);
       document.documentElement.appendChild(layer);
@@ -258,6 +263,30 @@
      * 根据选择器自动添加选区
      * @param {string} className 
      */
+    /**
+     * 根据视口坐标矩形（如 getBoundingClientRect() 的结果）添加选区框
+     * 将视口坐标换算为文档坐标，供绝对定位的选区层使用
+     * @param {DOMRect|{left:number, top:number, width:number, height:number}} rect
+     * @returns {boolean} 是否成功添加
+     */
+    addSelectionByRect(rect) {
+      if (!rect || rect.width <= 1 || rect.height <= 1) return false;
+      this._resizeLayer();
+      const scrollX = window.scrollX || document.documentElement.scrollLeft;
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      this._addSelection(
+        rect.left + scrollX,
+        rect.top + scrollY,
+        rect.width,
+        rect.height
+      );
+      return true;
+    }
+
+    /**
+     * 根据选择器自动添加选区
+     * @param {string} className 
+     */
     addSelectionByClass(className) {
       // 兼容用户输入带点或不带点的情况
       const selector = className.startsWith('.') ? className : `.${className}`;
@@ -285,6 +314,16 @@
 
     setVisible(visible) {
       this._layer.style.display = visible ? '' : 'none';
+    }
+
+    /**
+     * 设置选区层是否“穿透鼠标”
+     * DOM 检查模式下开启，使点击能落到选区框下方的页面元素上
+     * @param {boolean} passthrough
+     */
+    setPassthrough(passthrough) {
+      if (!this._layer) return;
+      this._layer.classList.toggle('sss-selection-passthrough', !!passthrough);
     }
 
     _blockSelection() {

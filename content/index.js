@@ -110,6 +110,12 @@
       this.toolbar.onOpenCoffee = () => {
         this.coffeeModal.show();
       };
+      // 关闭插件：与点击插件图标效果一致（隐藏工具条与标尺并持久化）
+      this.toolbar.onClose = () => {
+        const visible = this.toggleMenu();
+        // 同步插件图标角标，保持与点击图标关闭时完全一致
+        chrome.runtime.sendMessage({ type: SSS.MSG.SYNC_MENU, visible }).catch(() => {});
+      };
       this.toolbar.onAutoSelection = () => {
         this.classSelectionModal.show();
       };
@@ -123,12 +129,17 @@
         else this.domInspector.disable();
       };
 
-      // DOM 检查状态可能由模块内部关闭（单击复制 / ESC），此处同步工具条按钮
+      // DOM 检查状态可能由模块内部关闭（点选 / ESC），此处同步工具条按钮
       this.domInspector.onStateChange = (active) => {
         this.toolbar.updateDomInspectState(active);
+        // 检查模式下让选区框“穿透”鼠标，保证能在已选区上方继续点选下方元素
+        this.selections.setPassthrough(active);
       };
-      this.domInspector.onCopy = (xpath) => {
-        this._notify(SSS.I18n.t('notifyXPathCopied', { xpath }), 'info');
+      // 检查 DOM 模式下点击元素：将该元素区域添加为选区框（检查状态保持开启，支持连续点选）
+      this.domInspector.onPick = (_element, rect) => {
+        if (this.selections.addSelectionByRect(rect)) {
+          this._notify(SSS.I18n.t('notifySelectionAdded'), 'info');
+        }
       };
 
       this.classSelectionModal.onConfirm = (className) => {

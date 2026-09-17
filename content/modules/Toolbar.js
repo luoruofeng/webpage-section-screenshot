@@ -21,6 +21,7 @@
       this.onDomInspect = null; // 检查 DOM 元素
       this.onOpenSettings = null; // 打开设置
       this.onOpenCoffee = null; // 请喝咖啡
+      this.onClose = null; // 关闭插件（与点击插件图标一致）
       this._el = null;
       this._guideCountEl = null;
       this._toggleBtn = null;
@@ -71,6 +72,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
           ${i18n.t('toolbarCoffee')}
         </button>
+        <button class="sss-btn sss-btn-secondary sss-close-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          ${i18n.t('toolbarClose')}
+        </button>
         <div class="sss-guide-count" style="text-align:center;font-size:12px;color:#6b7280;">${i18n.t('guideCount', { count: 0 })}</div>
       `;
       this._el = el;
@@ -83,6 +88,7 @@
       el.querySelector('.sss-clear-btn').addEventListener('click', () => this.onClear?.());
       el.querySelector('.sss-settings-btn').addEventListener('click', () => this.onOpenSettings?.());
       el.querySelector('.sss-coffee-btn').addEventListener('click', () => this.onOpenCoffee?.());
+      el.querySelector('.sss-close-btn').addEventListener('click', () => this.onClose?.());
       this._toggleBtn.addEventListener('click', () => this.onToggleRuler?.());
       this._selectionBtn.addEventListener('click', () => {
         this._selectionActive = !this._selectionActive;
@@ -175,6 +181,7 @@
         this._el.querySelector('.sss-settings-btn').lastChild.textContent =
           i18n.t('toolbarSettings');
         this._el.querySelector('.sss-coffee-btn').lastChild.textContent = i18n.t('toolbarCoffee');
+        this._el.querySelector('.sss-close-btn').lastChild.textContent = i18n.t('toolbarClose');
       }
       this.updateSelectionState(this._selectionActive);
       this.updateToggleLabel(this._rulerVisible);
